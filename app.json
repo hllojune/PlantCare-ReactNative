@@ -8,7 +8,12 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.sppkl.plantcare"
+      "bundleIdentifier": "com.sppkl.plantcare",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "package": "com.sppkl.plantcare"
