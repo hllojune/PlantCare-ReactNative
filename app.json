@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "PlantCare",
+    "slug": "plant-care-rn",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.sppkl.plantcare"
+    },
+    "android": {
+      "package": "com.sppkl.plantcare"
+    },
+    "plugins": []
+  }
+}
