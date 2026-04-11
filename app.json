@@ -7,12 +7,20 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": false,
-      "bundleIdentifier": "com.sppkl.plantcare"
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "package": "com.sppkl.plantcare"
     },
-    "plugins": []
+    "plugins": [
+      ["expo-image-picker", {
+        "cameraPermission": "식물 진단을 위해 카메라 접근이 필요합니다.",
+        "mediaLibraryPermission": "식물 사진 업로드를 위해 갤러리 접근이 필요합니다."
+      }]
+    ]
   }
 }
