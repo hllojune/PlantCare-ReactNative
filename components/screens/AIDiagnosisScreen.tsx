@@ -13,7 +13,7 @@ import { Colors, BorderRadius, FontSize, Spacing } from '../../theme';
 // ─── API 설정 ───────────────────────────────────────────
 // const BASE_URL = 'http://10.0.2.2:8080'; // Android 에뮬레이터
 // const DEV_BASE_URL = 'http://localhost:8080';
-const BASE_URL = 'http://192.168.45.246:8080'; // GateWay 포트
+const BASE_URL = 'http://172.16.106.231:8080'; // GateWay 포트
 // const BASE_URL = 'http://192.168.219.53:8084';  // ai서비스 다이렉트
 
 const PLANT_ID = 1; // TODO : 추후 실제 로그인한 사용자의 plantId로 교체
@@ -76,11 +76,9 @@ export function AIDiagnosisScreen({ onNavigate }: NavigationProps) {
     }
     setLoading(true);
     
-    // 1. IP 주소 업데이트 확인 (192.168.219.53)
-    const UPDATED_BASE_URL = 'http://192.168.219.53:8084';
 
     try {
-      console.log('진단 시작 - 요청 URL:', `${UPDATED_BASE_URL}/ai/gemini`);
+      console.log('진단 시작 - 요청 URL:', `${BASE_URL}/ai/gemini`);
       
       const formData = new FormData();
       
@@ -98,7 +96,7 @@ export function AIDiagnosisScreen({ onNavigate }: NavigationProps) {
 
       formData.append('plantId', String(PLANT_ID));
 
-      const response = await fetch(`${UPDATED_BASE_URL}/ai/gemini`, {
+      const response = await fetch(`${BASE_URL}/ai/gemini`, {
         method: 'POST',
         body: formData,
         // headers는 절대 넣지 마세요 (fetch가 자동으로 boundary 설정)
