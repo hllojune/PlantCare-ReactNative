@@ -3,8 +3,8 @@ import {
   View, Text, Image, TouchableOpacity,
   StyleSheet, ScrollView, ActivityIndicator, Alert,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { PrimaryButton } from '../shared/PrimaryButton';
 import { StatusChip } from '../shared/StatusChip';
 import { NavigationProps } from '../../types/navigation';
@@ -33,7 +33,7 @@ export function AIDiagnosisScreen({ onNavigate }: NavigationProps) {
     }
   };
 
-  // ── 카메라 촬영 ───────────────────────────────────────
+  // ─── 카메라로 촬영 ───────────────────────────────────
   const takePhoto = async () => {
     const { granted } = await ImagePicker.requestCameraPermissionsAsync();
     if (!granted) { Alert.alert('권한 필요', '카메라 접근 권한이 필요합니다.'); return; }
@@ -58,9 +58,11 @@ export function AIDiagnosisScreen({ onNavigate }: NavigationProps) {
       console.error('AI 진단 에러:', error);
     } finally {
       setLoading(false);
+      setLoading(false);
     }
   };
 
+  const isSuccess = diagnosisResult?.result === '진단완료';
   const isSuccess = diagnosisResult?.result === '진단완료';
 
   return (
@@ -76,18 +78,25 @@ export function AIDiagnosisScreen({ onNavigate }: NavigationProps) {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
         {/* 이미지 업로드 섹션 */}
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
+        {/* 이미지 업로드 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>식물 이미지 업로드</Text>
 
           <View style={styles.imageBox}>
             {imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.previewImage} resizeMode="cover" />
+              <Image source={{ uri: imageUri }} style={styles.previewImage} resizeMode="cover" />
             ) : (
+              <TouchableOpacity style={styles.uploadPlaceholder} activeOpacity={0.8} onPress={pickFromGallery}>
               <TouchableOpacity style={styles.uploadPlaceholder} activeOpacity={0.8} onPress={pickFromGallery}>
                 <View style={styles.uploadIconWrap}>
                   <Ionicons name="camera-outline" size={32} color={Colors.primaryLight} />
                 </View>
                 <Text style={styles.uploadTitle}>사진 촬영 또는 업로드</Text>
+                <Text style={styles.uploadSub}>최상의 결과를 위해 문제 부위를 촬영해 주세요</Text>
+              </TouchableOpacity>
                 <Text style={styles.uploadSub}>최상의 결과를 위해 문제 부위를 촬영해 주세요</Text>
               </TouchableOpacity>
             )}
@@ -127,14 +136,23 @@ export function AIDiagnosisScreen({ onNavigate }: NavigationProps) {
                   label={isSuccess ? diagnosisResult.title : '진단 실패'}
                   variant={isSuccess ? 'success' : 'error'}
                 />
+                <StatusChip
+                  label={isSuccess ? diagnosisResult.title : '진단 실패'}
+                  variant={isSuccess ? 'success' : 'error'}
+                />
               </View>
 
               <View style={styles.resultRow}>
                 <Text style={styles.resultLabel}>상태</Text>
                 <Text style={styles.resultValue}>{diagnosisResult.title}</Text>
+                <Text style={styles.resultValue}>{diagnosisResult.title}</Text>
               </View>
 
               <View>
+                <Text style={styles.resultLabel}>상세 내용</Text>
+                <Text style={[styles.resultValue, { marginTop: 4 }]}>
+                  {diagnosisResult.details}
+                </Text>
                 <Text style={styles.resultLabel}>상세 내용</Text>
                 <Text style={[styles.resultValue, { marginTop: 4 }]}>
                   {diagnosisResult.details}
@@ -158,7 +176,11 @@ export function AIDiagnosisScreen({ onNavigate }: NavigationProps) {
             <TouchableOpacity
               style={styles.retakeBtn}
               onPress={() => { setDiagnosisResult(null); setImageUri(null); }}
+              style={styles.retakeBtn}
+              onPress={() => { setDiagnosisResult(null); setImageUri(null); }}
             >
+              <Ionicons name="refresh-outline" size={16} color={Colors.textPrimary} />
+              <Text style={styles.retakeBtnText}>다시 진단하기</Text>
               <Ionicons name="refresh-outline" size={16} color={Colors.textPrimary} />
               <Text style={styles.retakeBtnText}>다시 진단하기</Text>
             </TouchableOpacity>
@@ -173,6 +195,9 @@ export function AIDiagnosisScreen({ onNavigate }: NavigationProps) {
               '식물 또는 문제 부위의 선명한 사진을 촬영하세요',
               'AI가 이미지를 분석합니다',
               '진단 결과와 관리 권장 사항을 받아보세요',
+              '식물 또는 문제 부위의 선명한 사진을 촬영하세요',
+              'AI가 이미지를 분석합니다',
+              '진단 결과와 관리 권장 사항을 받아보세요',
             ].map((step, i) => (
               <View key={i} style={styles.guideRow}>
                 <Text style={styles.guideStep}>{i + 1}.</Text>
@@ -181,11 +206,13 @@ export function AIDiagnosisScreen({ onNavigate }: NavigationProps) {
             ))}
           </View>
         )}
+
       </ScrollView>
     </View>
   );
 }
 
+// styles는 기존 것 그대로 사용
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.backgroundGray },
   appBar: {
@@ -201,6 +228,8 @@ const styles = StyleSheet.create({
   imageBox: {
     borderRadius: BorderRadius.xl, borderWidth: 2, borderStyle: 'dashed',
     borderColor: Colors.border, overflow: 'hidden', backgroundColor: Colors.white,
+    borderRadius: BorderRadius.xl, borderWidth: 2, borderStyle: 'dashed',
+    borderColor: Colors.border, overflow: 'hidden', backgroundColor: Colors.white,
   },
   previewImage: { width: '100%', height: 256 },
   uploadPlaceholder: { paddingVertical: 48, alignItems: 'center', gap: Spacing.sm },
@@ -210,12 +239,12 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.sm,
   },
   uploadTitle: { fontSize: FontSize.base, color: Colors.textPrimary, fontWeight: '500' },
-  uploadSub: {
-    fontSize: FontSize.sm, color: Colors.textTertiary,
-    textAlign: 'center', paddingHorizontal: Spacing.lg,
-  },
+  uploadSub: { fontSize: FontSize.sm, color: Colors.textTertiary, textAlign: 'center', paddingHorizontal: Spacing.lg },
   retakeRow: { flexDirection: 'row', gap: Spacing.sm },
   retakeBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: Spacing.sm, backgroundColor: Colors.white, borderWidth: 1,
+    borderColor: Colors.border, borderRadius: BorderRadius.lg, paddingVertical: Spacing.sm,
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: Spacing.sm, backgroundColor: Colors.white, borderWidth: 1,
     borderColor: Colors.border, borderRadius: BorderRadius.lg, paddingVertical: Spacing.sm,
@@ -240,6 +269,8 @@ const styles = StyleSheet.create({
   tipText: { fontSize: FontSize.sm, color: '#1e3a5f', lineHeight: 20 },
   tipBold: { fontWeight: '600' },
   guideBox: {
+    backgroundColor: Colors.blueBg, borderWidth: 1, borderColor: `${Colors.blue}40`,
+    borderRadius: BorderRadius.lg, padding: Spacing.lg, gap: Spacing.sm,
     backgroundColor: Colors.blueBg, borderWidth: 1, borderColor: `${Colors.blue}40`,
     borderRadius: BorderRadius.lg, padding: Spacing.lg, gap: Spacing.sm,
   },
