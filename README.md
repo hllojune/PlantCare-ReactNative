@@ -1,111 +1,53 @@
-# PlantCare RN — React Native + TypeScript
+# 🌿 PlantCare RN (v2.0.0-alpha)
 
-웹용(React.js) PlantCare 앱을 **React Native + TypeScript + Expo SDK 54** 기반으로 전체 변환한 프로젝트입니다.
+기존 웹(React.js) 기반 프로젝트를 **React Native + TypeScript + Expo** 환경으로 전면 재설계 및 마이그레이션한 버전입니다.
+
+## 📌 주요 업데이트 및 기술 스택
+* **Platform**: React Native (Expo SDK 54)
+* **Language**: TypeScript (Strict Type Check 적용)
+* **UI System**: `lucide-react-native`, Custom Native StyleSheet
+* **Navigation**: React Navigation (Stack & Bottom Tab) 기반 라우팅
 
 ---
 
-## 📁 프로젝트 구조
+## 📁 프로젝트 구조 (아키텍처)
+모바일 앱의 유지보수와 컴포넌트 재사용성을 위해 화면과 공통 요소를 분리했습니다.
 
-```
+```text
 PlantCareRN/
-├── App.tsx                          # 앱 진입점 + 하단 탭 네비게이션
-├── theme.ts                         # 색상, 간격, 폰트 크기 상수
-├── types/
-│   └── navigation.ts                # 화면(Screen) 타입 정의
+├── App.tsx                  # 네비게이션 구조 및 앱 진입점
+├── theme.ts                 # 전역 디자인 시스템 (Colors, Spacing)
+├── types/                   # Navigation 및 API 전역 타입 정의
 ├── components/
-│   ├── shared/                      # 공통 컴포넌트
-│   │   ├── PrimaryButton.tsx
-│   │   ├── StatusChip.tsx
-│   │   ├── PlantCard.tsx
-│   │   ├── SensorWidget.tsx
-│   │   ├── ChartPlaceholder.tsx
-│   │   └── NotificationCard.tsx
-│   └── screens/                     # 화면 컴포넌트 (12개)
-│       ├── OnboardingScreen.tsx
-│       ├── LoginScreen.tsx
-│       ├── SignupScreen.tsx
-│       ├── HomeScreen.tsx
-│       ├── PlantDetailScreen.tsx
-│       ├── AddPlantScreen.tsx
-│       ├── AIDiagnosisScreen.tsx
-│       ├── GrowthDiaryScreen.tsx
-│       ├── SensorDashboardScreen.tsx
-│       ├── NotificationsScreen.tsx
-│       ├── PlantEncyclopediaScreen.tsx
-│       └── SettingsScreen.tsx
-├── package.json
-├── tsconfig.json
-└── app.json
+│   ├── shared/              # 공통 UI 컴포넌트 (PlantCard, SensorWidget 등)
+│   └── screens/             # 기능별 독립 화면 (12개 화면 변환 완료)
+└── ...
+
 ```
 
 ---
 
-## 🚀 시작 방법 (이 순서대로 정확히 실행)
+## 🔄 주요 변환 사항 (Web to Native)
 
-### 1. 기존 node_modules 완전 삭제 후 재설치
-```bash
-# node_modules와 package-lock.json 삭제
-rm -rf node_modules package-lock.json
+백엔드 및 IoT 연동 시 참고해야 할 UI/UX 기술적 변경점입니다.
 
-# 클린 설치
-npm install --legacy-peer-deps
-```
-
-### 2. 앱 실행
-```bash
-npx expo start
-```
-
-> 이후 터미널에 QR 코드가 뜨면:
-> - **iOS**: Expo Go 앱으로 QR 스캔
-> - **Android**: Expo Go 앱으로 QR 스캔
-> - **시뮬레이터**: `i` (iOS) 또는 `a` (Android) 키 입력
-
-### Windows에서 삭제 명령어
-```powershell
-rmdir /s /q node_modules
-del package-lock.json
-npm install --legacy-peer-deps
-```
+| 구분 | 변경 내용 | 비고 |
+| --- | --- | --- |
+| **UI Components** | HTML Tag → Native Components | View, Text, Image, ScrollView 적용 |
+| **Interaction** | Click → Touch Feedback | TouchableOpacity 적용으로 터치감 개선 |
+| **Routing** | State Routing → React Navigation | Native Stack 기반의 부드러운 화면 전환 |
+| **Layout** | CSS Flexbox → Yoga Engine | Flex-direction 기본값 Column 설정 |
+| **Media** | HTML Input → Expo Image Picker | 기기 갤러리 및 카메라 연동 최적화 |
 
 ---
 
-## ⚠️ 주의사항
+## 📦 의존성 현황
 
-- `npx expo install --fix` 또는 `--check`는 **실행하지 마세요** — peer dependency 충돌이 발생합니다.
-- 반드시 `npm install --legacy-peer-deps` 로 설치하세요.
-- Node.js 18 이상 권장.
-
----
-
-## 🔄 변환 요약
-
-| 웹 (React.js)            | RN (React Native)              |
-|--------------------------|--------------------------------|
-| `div`, `span`            | `View`                         |
-| `p`, `h1~h6`             | `Text`                         |
-| `img`                    | `Image`                        |
-| `input`, `textarea`      | `TextInput`                    |
-| `button`                 | `TouchableOpacity`             |
-| `className` (Tailwind)   | `StyleSheet.create()`          |
-| `lucide-react` 아이콘    | `@expo/vector-icons` Ionicons  |
-| CSS flexbox              | RN flexbox (기본 column 방향)  |
-| `position: fixed`        | `position: absolute` / Modal   |
-| `overflow-y: auto`       | `ScrollView`                   |
-| `min-h-screen`           | `flex: 1`                      |
+* **Core**: `expo`, `react-native`, `react`
+* **UI/Icons**: `lucide-react-native`, `@expo/vector-icons`
+* **Navigation**: `@react-navigation/native`, `@react-navigation/bottom-tabs`
+* **Safe Area**: `react-native-safe-area-context`
 
 ---
 
-## 📦 의존성 (Expo SDK 54 기준)
-
-| 패키지 | 버전 |
-|--------|------|
-| expo | ~54.0.33 |
-| react | 19.1.0 |
-| react-native | 0.81.5 |
-| @expo/vector-icons | ^15.0.3 |
-| expo-font | ~13.3.1 |
-| expo-status-bar | ~3.0.9 |
-| react-native-safe-area-context | ~5.6.0 |
-| react-native-screens | ~4.16.0 |
-
+**Note**: 본 버전은 UI/UX 전면 개편에 따른 메이저 업데이트(v2.0.0)입니다. 이후 작업은 백엔드 API 연동 및 실제 센서 데이터 매핑을 위주로 진행될 예정입니다.
