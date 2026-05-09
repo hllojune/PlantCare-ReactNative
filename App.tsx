@@ -82,13 +82,13 @@ export default function App() {
         >
           {/* 인증 및 온보딩 (바텀 탭 없음) */}
           <Stack.Screen name="onboarding">
-            {(props) => <Onboarding onNavigate={() => props.navigation.navigate('login')} />}
+            {(props) => <Onboarding onNavigate={() => props.navigation.navigate('login' as never)} />}
           </Stack.Screen>
           <Stack.Screen name="login">
-            {(props) => <Login {...props} onNavigate={() => props.navigation.navigate('signup')} />}
+            {(props) => <Login {...props} onNavigate={(screen) => props.navigation.navigate(screen as never)} />}
           </Stack.Screen>
           <Stack.Screen name="signup">
-            {(props) => <Signup {...props} onNavigate={() => props.navigation.navigate('MainTabs')} />}
+            {(props) => <Signup {...props} onNavigate={(screen) => props.navigation.navigate(screen as never)} />}
           </Stack.Screen>
 
           {/* 메인 탭 화면들 (여기로 이동하면 바텀 탭이 나타남) */}

@@ -1,88 +1,142 @@
+import axios, { AxiosError, AxiosHeaders } from 'axios';
 import { Platform } from 'react-native';
 
-const BASE_URL = 'http://172.16.xxx.xxx:8080'; // GateWay 포트 — 실제 IP로 교체 필요
+const DEVICE_BASE_URL = 'http://192.168.219.51:8080';
+const WEB_BASE_URL = 'http://localhost:8080';
+
+const BASE_URL = Platform.OS === 'web' ? WEB_BASE_URL : DEVICE_BASE_URL;
 
 export { BASE_URL };
 
 let authToken: string | null = null;
-export function setToken(token: string) { authToken = token; }
-export function clearToken() { authToken = null; }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-      ...options.headers,
-    },
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error((error as any).message ?? `HTTP ${response.status}`);
-  }
-  return response.json() as Promise<T>;
+export function setToken(token: string) {
+  authToken = token;
 }
 
-// ── auth-service ───────────────────────────────────────────
+export function clearToken() {
+  authToken = null;
+}
+
+interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+apiClient.interceptors.request.use((config) => {
+  const headers = AxiosHeaders.from(config.headers);
+
+  if (authToken) {
+    headers.set('Authorization', `Bearer ${authToken}`);
+  }
+
+  config.headers = headers;
+  return config;
+});
+
+function toErrorMessage(error: unknown) {
+  if (axios.isAxiosError(error)) {
+    const responseMessage = error.response?.data?.message;
+    if (typeof responseMessage === 'string' && responseMessage.length > 0) {
+      return responseMessage;
+    }
+
+    if (error.code === AxiosError.ERR_NETWORK) {
+      return `Network error. Check that the API is reachable at ${BASE_URL}.`;
+    }
+
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Unexpected request failure.';
+}
+
+async function request<T>(config: {
+  url: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  data?: unknown;
+}) {
+  try {
+    const response = await apiClient.request<T>(config);
+    return response.data;
+  } catch (error) {
+    throw new Error(toErrorMessage(error));
+  }
+}
+
 export const authApi = {
-  login: (email: string, password: string) =>
-    request<{ token: string; userId: number }>('/auth/login', {
+  async login(userId: string, password: string) {
+    const response = await request<ApiResponse<{ token: string }>>({
+      url: '/auth/login',
       method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
-  signup: (nickname: string, email: string, password: string) =>
-    request<{ userId: number }>('/auth/signup', {
+      data: { userId, password },
+    });
+
+    return response.data;
+  },
+
+  async signup(userId: string, nickname: string, email: string, password: string) {
+    const response = await request<ApiResponse<string>>({
+      url: '/auth/signup',
       method: 'POST',
-      body: JSON.stringify({ nickname, email, password }),
-    }),
-  getMe: () =>
-    request<{ id: number; nickname: string; email: string }>('/auth/me'),
+      data: { userId, nickname, email, password },
+    });
+
+    return response.data;
+  },
 };
 
-// ── plant-service ──────────────────────────────────────────
 export const plantApi = {
-  getAll:  () => request<Plant[]>('/plant'),
-  getById: (id: string) => request<Plant>(`/plant/${id}`),
-  create:  (data: CreatePlantDto) =>
-    request<Plant>('/plant', { method: 'POST', body: JSON.stringify(data) }),
-  update:  (id: string, data: Partial<CreatePlantDto>) =>
-    request<Plant>(`/plant/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  delete:  (id: string) => request<void>(`/plant/${id}`, { method: 'DELETE' }),
+  getAll: () => request<Plant[]>({ url: '/plant', method: 'GET' }),
+  getById: (id: string) => request<Plant>({ url: `/plant/${id}`, method: 'GET' }),
+  create: (data: CreatePlantDto) => request<Plant>({ url: '/plant', method: 'POST', data }),
+  update: (id: string, data: Partial<CreatePlantDto>) =>
+    request<Plant>({ url: `/plant/${id}`, method: 'PUT', data }),
+  delete: (id: string) => request<void>({ url: `/plant/${id}`, method: 'DELETE' }),
 };
 
-// ── sensor-service ─────────────────────────────────────────
 export const sensorApi = {
-  getLatest:  () => request<SensorData>('/sensor/latest'),
-  getHistory: (plantId: string) => request<SensorData[]>(`/sensor/history/${plantId}`),
+  getLatest: () => request<SensorData>({ url: '/sensor/latest', method: 'GET' }),
+  getHistory: (plantId: string) =>
+    request<SensorData[]>({ url: `/sensor/history/${plantId}`, method: 'GET' }),
 };
 
-// ── ai-service ─────────────────────────────────────────────
 export const aiApi = {
-  diagnose: async (imageUri: string, plantId: number): Promise<DiagnosisResult> => {
+  async diagnose(imageUri: string, plantId: number): Promise<DiagnosisResult> {
     const filename = imageUri.split('/').pop() || 'plant.jpg';
-    const match    = /\.(\w+)$/.exec(filename);
-    const type     = match ? `image/${match[1]}` : 'image/jpeg';
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
 
     const formData = new FormData();
     formData.append('image', { uri: imageUri, name: filename, type } as any);
     formData.append('plantId', String(plantId));
 
-    const response = await fetch(`${BASE_URL}/ai/gemini`, {
-      method: 'POST',
-      body: formData,
-      ...(authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : {}),
-    });
+    try {
+      const response = await apiClient.post<DiagnosisResult>('/ai/gemini', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`서버 응답 오류(${response.status}): ${errorText}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(toErrorMessage(error));
     }
-    return response.json() as Promise<DiagnosisResult>;
   },
 };
 
-// ── 타입 정의 ──────────────────────────────────────────────
 export interface Plant {
   id: string;
   name: string;
@@ -107,11 +161,11 @@ export interface SensorData {
 }
 
 export interface DiagnosisResult {
-  diagnosisId:   number;
-  plantId:       number;
-  title:         string;
-  details:       string;
-  result:        string;
-  imageUrl:      string;
+  diagnosisId: number;
+  plantId: number;
+  title: string;
+  details: string;
+  result: string;
+  imageUrl: string;
   diagnosisDate: string;
 }
