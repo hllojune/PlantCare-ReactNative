@@ -1,53 +1,74 @@
-# 🌿 PlantCare RN (v2.0.0-alpha)
+# PlantCare React Native
 
-기존 웹(React.js) 기반 프로젝트를 **React Native + TypeScript + Expo** 환경으로 전면 재설계 및 마이그레이션한 버전입니다.
+Expo 기반 React Native 프론트 프로젝트입니다.
 
-## 📌 주요 업데이트 및 기술 스택
-* **Platform**: React Native (Expo SDK 54)
-* **Language**: TypeScript (Strict Type Check 적용)
-* **UI System**: `lucide-react-native`, Custom Native StyleSheet
-* **Navigation**: React Navigation (Stack & Bottom Tab) 기반 라우팅
+## 실행 전 준비
 
----
+백엔드가 먼저 실행돼 있어야 합니다.
 
-## 📁 프로젝트 구조 (아키텍처)
-모바일 앱의 유지보수와 컴포넌트 재사용성을 위해 화면과 공통 요소를 분리했습니다.
+- `discovery-service`
+- `gateway-service`
+- `user-service`
+- MySQL
 
-```text
-PlantCareRN/
-├── App.tsx                  # 네비게이션 구조 및 앱 진입점
-├── theme.ts                 # 전역 디자인 시스템 (Colors, Spacing)
-├── types/                   # Navigation 및 API 전역 타입 정의
-├── components/
-│   ├── shared/              # 공통 UI 컴포넌트 (PlantCard, SensorWidget 등)
-│   └── screens/             # 기능별 독립 화면 (12개 화면 변환 완료)
-└── ...
+기본 포트:
 
+- `8761` Eureka
+- `8080` Gateway
+- `8081` Auth
+
+## API 주소 설정
+
+이 프로젝트는 Expo 환경변수로 API 주소를 읽습니다.
+
+1. `.env.example`을 복사해서 `.env` 파일을 만듭니다.
+2. 본인 환경에 맞게 값을 수정합니다.
+
+예시:
+
+```env
+EXPO_PUBLIC_API_BASE_URL_WEB=http://localhost:8080
+EXPO_PUBLIC_API_BASE_URL_DEVICE=http://192.168.219.51:8080
 ```
 
----
+설명:
 
-## 🔄 주요 변환 사항 (Web to Native)
+- `EXPO_PUBLIC_API_BASE_URL_WEB`
+  - 웹 브라우저에서 사용할 백엔드 주소
+- `EXPO_PUBLIC_API_BASE_URL_DEVICE`
+  - 휴대폰 또는 에뮬레이터에서 사용할 백엔드 주소
 
-백엔드 및 IoT 연동 시 참고해야 할 UI/UX 기술적 변경점입니다.
+주의:
 
-| 구분 | 변경 내용 | 비고 |
-| --- | --- | --- |
-| **UI Components** | HTML Tag → Native Components | View, Text, Image, ScrollView 적용 |
-| **Interaction** | Click → Touch Feedback | TouchableOpacity 적용으로 터치감 개선 |
-| **Routing** | State Routing → React Navigation | Native Stack 기반의 부드러운 화면 전환 |
-| **Layout** | CSS Flexbox → Yoga Engine | Flex-direction 기본값 Column 설정 |
-| **Media** | HTML Input → Expo Image Picker | 기기 갤러리 및 카메라 연동 최적화 |
+- 휴대폰 테스트 시 `localhost`는 사용할 수 없습니다.
+- 같은 Wi-Fi에 연결된 백엔드 PC의 LAN IP를 사용해야 합니다.
+- 현재 예시 IP는 `192.168.219.51`입니다. IP가 바뀌면 `.env`도 같이 수정해야 합니다.
 
----
+## 설치 및 실행
 
-## 📦 의존성 현황
+```bash
+npm install
+npm run web
+```
 
-* **Core**: `expo`, `react-native`, `react`
-* **UI/Icons**: `lucide-react-native`, `@expo/vector-icons`
-* **Navigation**: `@react-navigation/native`, `@react-navigation/bottom-tabs`
-* **Safe Area**: `react-native-safe-area-context`
+모바일 테스트:
 
----
+```bash
+npm start
+```
 
-**Note**: 본 버전은 UI/UX 전면 개편에 따른 메이저 업데이트(v2.0.0)입니다. 이후 작업은 백엔드 API 연동 및 실제 센서 데이터 매핑을 위주로 진행될 예정입니다.
+## 팀원 테스트 방법
+
+같은 네트워크에서 테스트하려면:
+
+1. 백엔드 실행
+2. 팀원이 같은 Wi-Fi 연결
+3. `.env`의 `EXPO_PUBLIC_API_BASE_URL_DEVICE`를 백엔드 PC IP로 설정
+4. Expo 앱 실행
+
+## 현재 인증 동작
+
+- 회원가입 시 아이디 중복 검사
+- 회원가입 시 닉네임 중복 검사
+- 로그인 시 닉네임까지 받아와 메인 화면 환영 문구에 사용
+- 로그인/회원가입 유효성 검사 문구를 화면에 표시

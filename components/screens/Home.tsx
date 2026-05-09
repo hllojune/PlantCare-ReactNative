@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Plus, Bell, CloudRain } from 'lucide-react-native';
 import { PlantCard } from '../shared/PlantCard';
+import { getNickname } from '../../services/api';
 
 const mockPlants = [
   {
@@ -12,14 +13,14 @@ const mockPlants = [
     name: '몬스테라',
     species: 'Monstera Deliciosa',
     image: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400',
-    statusText: '2일 전 물을 줬어요',
+    statusText: '2일 후 물을 줄 예정이에요',
   },
   {
     id: '2',
     name: '산세베리아',
     species: 'Sansevieria trifasciata',
     image: 'https://images.unsplash.com/photo-1593482892290-f54927ae1bb6?w=400',
-    statusText: '토양 수분 안정적',
+    statusText: '조명 상태가 좋아요',
   },
   {
     id: '3',
@@ -36,11 +37,11 @@ export function Home({ navigation }: HomeProps) {
   const onNavigate = (screen: string, params: Record<string, unknown> = {}) =>
     navigation.navigate(screen, params);
 
+  const nickname = getNickname() || '플랜트';
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-
-        {/* AppBar */}
         <View style={styles.appBar}>
           <Text style={styles.appTitle}>PlantCare</Text>
           <View style={styles.appBarRight}>
@@ -57,15 +58,12 @@ export function Home({ navigation }: HomeProps) {
           </View>
         </View>
 
-        {/* Content */}
         <View style={styles.mainContent}>
-          {/* Greeting */}
           <View style={styles.greetingSection}>
-            <Text style={styles.greetingTitle}>좋은 아침입니다, 김식물님! ☀️</Text>
+            <Text style={styles.greetingTitle}>환영합니다. {nickname}님</Text>
             <Text style={styles.greetingSubtitle}>오늘 물을 기다리는 식물이 2개 있어요.</Text>
           </View>
 
-          {/* Weather Widget */}
           <View style={styles.weatherWidget}>
             <View style={styles.weatherIconContainer}>
               <CloudRain color="#2E7D32" size={40} strokeWidth={1.8} />
@@ -73,12 +71,11 @@ export function Home({ navigation }: HomeProps) {
             </View>
             <View style={styles.weatherTextContainer}>
               <Text style={styles.weatherText}>
-                오늘은 하루 종일 비가 와요. 식물들의 과습에 주의하세요!
+                오늘은 하루 종일 비가 와요. 식물의 과습 상태를 확인해주세요.
               </Text>
             </View>
           </View>
 
-          {/* My Plants */}
           <View style={styles.myPlantsSection}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>내 식물</Text>
@@ -97,7 +94,7 @@ export function Home({ navigation }: HomeProps) {
               <View style={styles.addIconCircle}>
                 <Plus color="#9CA3AF" size={20} />
               </View>
-              <Text style={styles.addPlantText}>새 식물 추가하기</Text>
+              <Text style={styles.addPlantText}>내 식물 추가하기</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,14 +1,15 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios';
 import { Platform } from 'react-native';
 
-const DEVICE_BASE_URL = 'http://192.168.219.51:8080';
-const WEB_BASE_URL = 'http://localhost:8080';
+const DEVICE_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_DEVICE || 'http://192.168.219.51:8080';
+const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_WEB || 'http://localhost:8080';
 
 const BASE_URL = Platform.OS === 'web' ? WEB_BASE_URL : DEVICE_BASE_URL;
 
 export { BASE_URL };
 
 let authToken: string | null = null;
+let currentNickname = '';
 
 export function setToken(token: string) {
   authToken = token;
@@ -16,6 +17,15 @@ export function setToken(token: string) {
 
 export function clearToken() {
   authToken = null;
+  currentNickname = '';
+}
+
+export function setNickname(nickname: string) {
+  currentNickname = nickname;
+}
+
+export function getNickname() {
+  return currentNickname;
 }
 
 interface ApiResponse<T> {
@@ -78,7 +88,7 @@ async function request<T>(config: {
 
 export const authApi = {
   async login(userId: string, password: string) {
-    const response = await request<ApiResponse<{ token: string }>>({
+    const response = await request<ApiResponse<{ token: string; nickname: string }>>({
       url: '/auth/login',
       method: 'POST',
       data: { userId, password },

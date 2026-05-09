@@ -80,6 +80,8 @@ export function Signup({ onNavigate }: { onNavigate: (screen: string) => void })
 
       if (message.includes('이미 사용 중인 아이디')) {
         setUserIdError(message);
+      } else if (message.includes('이미 사용 중인 닉네임')) {
+        setNicknameError(message);
       } else {
         Alert.alert('회원가입 실패', message);
       }
