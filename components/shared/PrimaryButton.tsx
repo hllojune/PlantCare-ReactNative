@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Colors, BorderRadius, FontSize } from '../../theme';
 
 interface PrimaryButtonProps {
@@ -15,29 +10,18 @@ interface PrimaryButtonProps {
   loading?: boolean;
 }
 
-export function PrimaryButton({
-  children,
-  onPress,
-  disabled = false,
-  fullWidth = false,
-  loading = false,
-}: PrimaryButtonProps) {
+export function PrimaryButton({ children, onPress, disabled = false, fullWidth = false, loading = false }: PrimaryButtonProps) {
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.8}
-      style={[
-        styles.button,
-        fullWidth && styles.fullWidth,
-        (disabled || loading) && styles.disabled,
-      ]}
+      style={[styles.button, fullWidth && styles.fullWidth, (disabled || loading) && styles.disabled]}
     >
-      {loading ? (
-        <ActivityIndicator color={Colors.white} size="small" />
-      ) : (
-        <Text style={styles.text}>{children}</Text>
-      )}
+      {loading
+        ? <ActivityIndicator color={Colors.white} size="small" />
+        : <Text style={styles.text}>{children}</Text>
+      }
     </TouchableOpacity>
   );
 }
@@ -51,12 +35,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fullWidth: {
-    width: '100%',
-  },
-  disabled: {
-    opacity: 0.5,
-  },
+  fullWidth: { width: '100%' },
+  disabled: { opacity: 0.5 },
   text: {
     color: Colors.white,
     fontSize: FontSize.base,

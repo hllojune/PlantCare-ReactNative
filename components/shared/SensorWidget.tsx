@@ -3,22 +3,13 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Colors, BorderRadius, FontSize, Spacing } from '../../theme';
 
 interface SensorWidgetProps {
-  iconName: string; // @expo/vector-icons Ionicons name
-  label: string;
-  value: string;
-  unit: string;
-  color?: string;
-}
-
-// We receive the rendered icon externally to avoid complex generic typing
-interface SensorWidgetFullProps {
   icon: React.ReactNode;
   label: string;
   value: string;
   unit: string;
 }
 
-export function SensorWidget({ icon, label, value, unit }: SensorWidgetFullProps) {
+export function SensorWidget({ icon, label, value, unit }: SensorWidgetProps) {
   return (
     <View style={styles.card}>
       <View style={styles.row}>
@@ -35,6 +26,7 @@ export function SensorWidget({ icon, label, value, unit }: SensorWidgetFullProps
 
 const styles = StyleSheet.create({
   card: {
+    flex: 1,
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,

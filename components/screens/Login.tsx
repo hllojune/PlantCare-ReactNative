@@ -1,35 +1,23 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Modal,
-  ActivityIndicator,
-  StatusBar,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  SafeAreaView, KeyboardAvoidingView, Platform, ScrollView,
+  Modal, ActivityIndicator, StatusBar,
 } from 'react-native';
 import { Sprout, Mail, EyeOff, Eye, X, Check } from 'lucide-react-native';
 
-// --- Mock Data ---
 const googleAccounts = [
-  { name: "김식물", email: "kimplant@gmail.com", color: "#4285F4" },
-  { name: "Garden Lover", email: "gardenlover@gmail.com", color: "#34A853" },
+  { name: '김식물', email: 'kimplant@gmail.com', color: '#4285F4' },
+  { name: 'Garden Lover', email: 'gardenlover@gmail.com', color: '#34A853' },
 ];
 
 export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
-  
-  // 소셜 로그인 시뮬레이션 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [stage, setStage] = useState('choose'); // choose | consent | loading | success
-  const [provider, setProvider] = useState<'google' | 'apple' | null>(null); // 'google' | 'apple'
+  const [stage, setStage] = useState<'choose' | 'consent' | 'loading' | 'success'>('choose');
+  const [provider, setProvider] = useState<'google' | 'apple' | null>(null);
 
   const openProvider = (p: 'google' | 'apple') => {
     setProvider(p);
@@ -43,19 +31,17 @@ export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) 
     setTimeout(() => {
       setIsModalOpen(false);
       setStage('choose');
-      onNavigate('home'); // 메인 홈으로 이동
+      onNavigate('home');
     }, 2100);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.flex1}
-      >
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex1}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Logo Section */}
+
+          {/* Logo */}
           <View style={styles.logoSection}>
             <View style={styles.logoCircle}>
               <Sprout color="#3a7d44" size={32} />
@@ -64,7 +50,7 @@ export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) 
             <Text style={styles.subtitle}>초록빛 일상을 SPPKL과 함께 이어가세요.</Text>
           </View>
 
-          {/* Form Section */}
+          {/* Form */}
           <View style={styles.formContainer}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>이메일</Text>
@@ -85,9 +71,7 @@ export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) 
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
                 <Text style={styles.label}>비밀번호</Text>
-                <TouchableOpacity>
-                  <Text style={styles.forgotText}>비밀번호 찾기</Text>
-                </TouchableOpacity>
+                <TouchableOpacity><Text style={styles.forgotText}>비밀번호 찾기</Text></TouchableOpacity>
               </View>
               <View style={styles.inputWrapper}>
                 <TextInput
@@ -104,22 +88,18 @@ export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) 
               </View>
             </View>
 
-            <TouchableOpacity 
-              style={styles.loginButton} 
-              onPress={() => onNavigate('home')}
-            >
+            <TouchableOpacity style={styles.loginButton} onPress={() => onNavigate('home')}>
               <Text style={styles.loginButtonText}>로그인</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Social Login Section */}
+          {/* Social */}
           <View style={styles.socialSection}>
             <View style={styles.dividerRow}>
               <View style={styles.dividerLine} />
               <Text style={styles.dividerText}>또는 다음으로 계속</Text>
               <View style={styles.dividerLine} />
             </View>
-
             <View style={styles.socialButtonsRow}>
               <TouchableOpacity style={styles.socialButton} onPress={() => openProvider('google')}>
                 <Text style={styles.socialButtonText}>Google</Text>
@@ -130,17 +110,16 @@ export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) 
             </View>
           </View>
 
-          {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>계정이 없으신가요? </Text>
-            <TouchableOpacity onPress={() => onNavigate('Signup')}>
+            <TouchableOpacity onPress={() => onNavigate('signup')}>
               <Text style={styles.signupLink}>회원가입</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Social Login Simulation Modal */}
+      {/* Social Login Modal */}
       <Modal visible={isModalOpen} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.bottomSheet}>
@@ -205,7 +184,10 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#ffffff' },
   scrollContent: { padding: 24, paddingBottom: 40 },
   logoSection: { alignItems: 'center', marginTop: 40, marginBottom: 48 },
-  logoCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#e8f5e9', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  logoCircle: {
+    width: 64, height: 64, borderRadius: 32,
+    backgroundColor: '#e8f5e9', alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+  },
   title: { fontSize: 24, fontWeight: '800', color: '#111827', marginBottom: 8 },
   subtitle: { fontSize: 14, color: '#6B7280', textAlign: 'center' },
   formContainer: { gap: 20 },
@@ -213,18 +195,28 @@ const styles = StyleSheet.create({
   labelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   label: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
   forgotText: { fontSize: 12, color: '#3a7d44', fontWeight: '500' },
-  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 16, paddingHorizontal: 16 },
+  inputWrapper: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB',
+    borderRadius: 16, paddingHorizontal: 16,
+  },
   inputIcon: { marginRight: 12 },
   textInput: { flex: 1, height: 56, fontSize: 16, color: '#111827' },
   eyeIcon: { padding: 8 },
-  loginButton: { backgroundColor: '#2d5a27', height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+  loginButton: {
+    backgroundColor: '#2d5a27', height: 56, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center', marginTop: 8,
+  },
   loginButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
   socialSection: { marginTop: 32 },
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 24 },
   dividerLine: { flex: 1, height: 1, backgroundColor: '#E5E7EB' },
   dividerText: { fontSize: 12, color: '#9CA3AF' },
   socialButtonsRow: { flexDirection: 'row', gap: 12 },
-  socialButton: { flex: 1, height: 56, borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center' },
+  socialButton: {
+    flex: 1, height: 56, borderRadius: 16, borderWidth: 1,
+    borderColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center',
+  },
   socialButtonText: { fontSize: 14, fontWeight: '600', color: '#374151' },
   appleButton: { backgroundColor: '#000000', borderColor: '#000000' },
   appleButtonText: { color: '#ffffff' },
@@ -232,20 +224,35 @@ const styles = StyleSheet.create({
   footerText: { fontSize: 14, color: '#6B7280' },
   signupLink: { fontSize: 14, color: '#3a7d44', fontWeight: '700' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  bottomSheet: { backgroundColor: '#ffffff', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, minHeight: 350 },
+  bottomSheet: {
+    backgroundColor: '#ffffff', borderTopLeftRadius: 32, borderTopRightRadius: 32,
+    padding: 24, minHeight: 350,
+  },
   sheetHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   sheetTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
   sheetContent: { gap: 16 },
-  accountItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: '#F9FAFB', marginBottom: 12 },
-  avatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  accountItem: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12,
+    borderRadius: 16, backgroundColor: '#F9FAFB', marginBottom: 12,
+  },
+  avatar: {
+    width: 40, height: 40, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center', marginRight: 12,
+  },
   avatarText: { color: '#ffffff', fontWeight: '700' },
   accName: { fontSize: 15, fontWeight: '600', color: '#111827' },
   accEmail: { fontSize: 13, color: '#6B7280' },
   center: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40 },
   loadingText: { marginTop: 16, color: '#6B7280' },
-  successBadge: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#3a7d44', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  successBadge: {
+    width: 64, height: 64, borderRadius: 32,
+    backgroundColor: '#3a7d44', alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+  },
   successText: { fontSize: 18, fontWeight: '700', color: '#2E7D32' },
   consentText: { fontSize: 14, color: '#4B5563', textAlign: 'center', marginBottom: 20 },
-  consentButton: { backgroundColor: '#3a7d44', height: 50, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  consentButton: {
+    backgroundColor: '#3a7d44', height: 50, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center',
+  },
   consentButtonText: { color: '#ffffff', fontWeight: '600' },
 });

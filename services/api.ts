@@ -1,9 +1,8 @@
-// services/api.ts
 import { Platform } from 'react-native';
 
-const BASE_URL = 'http://172.16.xxx.xxx:8080'; // GateWay 포트
+const BASE_URL = 'http://172.16.xxx.xxx:8080'; // GateWay 포트 — 실제 IP로 교체 필요
 
-export { BASE_URL }; // AIDiagnosisScreen에서 직접 fetch할 때 필요
+export { BASE_URL };
 
 let authToken: string | null = null;
 export function setToken(token: string) { authToken = token; }
@@ -20,7 +19,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message ?? `HTTP ${response.status}`);
+    throw new Error((error as any).message ?? `HTTP ${response.status}`);
   }
   return response.json() as Promise<T>;
 }
@@ -59,7 +58,6 @@ export const sensorApi = {
 };
 
 // ── ai-service ─────────────────────────────────────────────
-// FormData(multipart) 전송이라 공통 request() 대신 직접 fetch 사용
 export const aiApi = {
   diagnose: async (imageUri: string, plantId: number): Promise<DiagnosisResult> => {
     const filename = imageUri.split('/').pop() || 'plant.jpg';
@@ -70,12 +68,9 @@ export const aiApi = {
     formData.append('image', { uri: imageUri, name: filename, type } as any);
     formData.append('plantId', String(plantId));
 
-    console.log('AI 진단 요청:', `${BASE_URL}/ai/gemini`);
-
     const response = await fetch(`${BASE_URL}/ai/gemini`, {
       method: 'POST',
       body: formData,
-      // Content-Type 헤더 절대 넣지 않음 (fetch가 boundary 자동 설정)
       ...(authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : {}),
     });
 
@@ -83,10 +78,7 @@ export const aiApi = {
       const errorText = await response.text();
       throw new Error(`서버 응답 오류(${response.status}): ${errorText}`);
     }
-
-    const data: DiagnosisResult = await response.json();
-    console.log('AI 진단 성공:', data);
-    return data;
+    return response.json() as Promise<DiagnosisResult>;
   },
 };
 
@@ -114,13 +106,12 @@ export interface SensorData {
   recordedAt: string;
 }
 
-// 실제 백엔드 응답 구조에 맞춤
 export interface DiagnosisResult {
   diagnosisId:   number;
   plantId:       number;
   title:         string;
   details:       string;
-  result:        string; // "진단완료" | "진단실패"
+  result:        string;
   imageUrl:      string;
   diagnosisDate: string;
 }

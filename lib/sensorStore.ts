@@ -3,15 +3,10 @@ import { useState, useEffect } from 'react';
 let registeredPlantIds: Set<string> = new Set();
 const listeners: Array<() => void> = [];
 
-function notify() {
-  listeners.forEach((fn) => fn());
-}
+function notify() { listeners.forEach((fn) => fn()); }
 
 export function registerSensorForPlant(plantId: string | null | undefined) {
-  if (plantId) {
-    registeredPlantIds = new Set([...registeredPlantIds, plantId]);
-    notify();
-  }
+  if (plantId) { registeredPlantIds = new Set([...registeredPlantIds, plantId]); notify(); }
 }
 
 export function isSensorRegistered(plantId: string | null | undefined): boolean {
@@ -23,9 +18,6 @@ export function useRegisteredSensors() {
   useEffect(() => {
     const fn = () => setTick((t) => t + 1);
     listeners.push(fn);
-    return () => {
-      const idx = listeners.indexOf(fn);
-      if (idx !== -1) listeners.splice(idx, 1);
-    };
+    return () => { const idx = listeners.indexOf(fn); if (idx !== -1) listeners.splice(idx, 1); };
   }, []);
 }
