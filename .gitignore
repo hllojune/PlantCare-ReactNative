@@ -24,11 +24,12 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+expo.out.log
+expo.err.log
 *.log
 
 # IDE
 .idea/
-.vscode/
 *.iml
 *.swp
 
@@ -61,7 +62,7 @@ android/captures/
 .metro-health-check*
 metro.config.js.bak
 
-# Expo (쓰면)
+# Expo
 .expo/
 .expo-shared/
 web-build/

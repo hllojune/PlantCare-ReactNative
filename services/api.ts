@@ -1,105 +1,152 @@
-// PlantCareRN/services/api.ts
+import axios, { AxiosError, AxiosHeaders } from 'axios';
 import { Platform } from 'react-native';
 
-// 개발 환경별 Gateway 주소
-// - 실기기: ipconfig로 확인한 본인 PC의 실제 IP
-// - Android 에뮬레이터: 10.0.2.2 (에뮬레이터 내부에서 호스트 PC를 가리키는 특수 IP)
-// - iOS 시뮬레이터: localhost 가능
-const BASE_URL = Platform.select({
-  android: 'http://10.0.2.2:8080',      // Android 에뮬레이터 고정
-  ios:     'http://본인 PC의 실제 IP:8080',         // ← 여기를 실제 IP로 변경
-  default: 'http://본인 PC의 실제 IP:8080',
-});
+const DEVICE_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_DEVICE || 'http://192.168.219.51:8080';
+const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_WEB || 'http://localhost:8080';
+
+const BASE_URL = Platform.OS === 'web' ? WEB_BASE_URL : DEVICE_BASE_URL;
+
+export { BASE_URL };
 
 let authToken: string | null = null;
+let currentNickname = '';
 
 export function setToken(token: string) {
   authToken = token;
 }
+
 export function clearToken() {
   authToken = null;
+  currentNickname = '';
 }
 
-// ── 공통 요청 함수 ─────────────────────────────────────────
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-      ...options.headers,
-    },
-  });
+export function setNickname(nickname: string) {
+  currentNickname = nickname;
+}
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message ?? `HTTP ${response.status}`);
+export function getNickname() {
+  return currentNickname;
+}
+
+interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+apiClient.interceptors.request.use((config) => {
+  const headers = AxiosHeaders.from(config.headers);
+
+  if (authToken) {
+    headers.set('Authorization', `Bearer ${authToken}`);
   }
 
-  return response.json() as Promise<T>;
+  config.headers = headers;
+  return config;
+});
+
+function toErrorMessage(error: unknown) {
+  if (axios.isAxiosError(error)) {
+    const responseMessage = error.response?.data?.message;
+    if (typeof responseMessage === 'string' && responseMessage.length > 0) {
+      return responseMessage;
+    }
+
+    if (error.code === AxiosError.ERR_NETWORK) {
+      return `Network error. Check that the API is reachable at ${BASE_URL}.`;
+    }
+
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Unexpected request failure.';
 }
 
-// ── auth-service  →  Gateway /auth/** ─────────────────────
+async function request<T>(config: {
+  url: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  data?: unknown;
+}) {
+  try {
+    const response = await apiClient.request<T>(config);
+    return response.data;
+  } catch (error) {
+    throw new Error(toErrorMessage(error));
+  }
+}
+
 export const authApi = {
-  login: (email: string, password: string) =>
-    request<{ token: string; userId: number }>('/auth/login', {
+  async login(userId: string, password: string) {
+    const response = await request<ApiResponse<{ token: string; nickname: string }>>({
+      url: '/auth/login',
       method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
+      data: { userId, password },
+    });
 
-  signup: (nickname: string, email: string, password: string) =>
-    request<{ userId: number }>('/auth/signup', {
+    return response.data;
+  },
+
+  async signup(userId: string, nickname: string, email: string, password: string) {
+    const response = await request<ApiResponse<string>>({
+      url: '/auth/signup',
       method: 'POST',
-      body: JSON.stringify({ nickname, email, password }),
-    }),
+      data: { userId, nickname, email, password },
+    });
 
-  getMe: () =>
-    request<{ id: number; nickname: string; email: string }>('/auth/me'),
+    return response.data;
+  },
 };
 
-// ── plant-service  →  Gateway /plant/** ───────────────────
 export const plantApi = {
-  getAll: () =>
-    request<Plant[]>('/plant'),
-
-  getById: (id: string) =>
-    request<Plant>(`/plant/${id}`),
-
-  create: (data: CreatePlantDto) =>
-    request<Plant>('/plant', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-
+  getAll: () => request<Plant[]>({ url: '/plant', method: 'GET' }),
+  getById: (id: string) => request<Plant>({ url: `/plant/${id}`, method: 'GET' }),
+  create: (data: CreatePlantDto) => request<Plant>({ url: '/plant', method: 'POST', data }),
   update: (id: string, data: Partial<CreatePlantDto>) =>
-    request<Plant>(`/plant/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-
-  delete: (id: string) =>
-    request<void>(`/plant/${id}`, { method: 'DELETE' }),
+    request<Plant>({ url: `/plant/${id}`, method: 'PUT', data }),
+  delete: (id: string) => request<void>({ url: `/plant/${id}`, method: 'DELETE' }),
 };
 
-// ── sensor-service  →  Gateway /sensor/** ─────────────────
 export const sensorApi = {
-  getLatest: () =>
-    request<SensorData>('/sensor/latest'),
-
+  getLatest: () => request<SensorData>({ url: '/sensor/latest', method: 'GET' }),
   getHistory: (plantId: string) =>
-    request<SensorData[]>(`/sensor/history/${plantId}`),
+    request<SensorData[]>({ url: `/sensor/history/${plantId}`, method: 'GET' }),
 };
 
-// ── ai-service  →  Gateway /ai/** ─────────────────────────
 export const aiApi = {
-  diagnose: (imageBase64: string) =>
-    request<DiagnosisResult>('/ai/diagnose', {
-      method: 'POST',
-      body: JSON.stringify({ image: imageBase64 }),
-    }),
+  async diagnose(imageUri: string, plantId: number): Promise<DiagnosisResult> {
+    const filename = imageUri.split('/').pop() || 'plant.jpg';
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+    const formData = new FormData();
+    formData.append('image', { uri: imageUri, name: filename, type } as any);
+    formData.append('plantId', String(plantId));
+
+    try {
+      const response = await apiClient.post<DiagnosisResult>('/ai/gemini', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      throw new Error(toErrorMessage(error));
+    }
+  },
 };
 
-// ── 타입 정의 ──────────────────────────────────────────────
 export interface Plant {
   id: string;
   name: string;
@@ -124,7 +171,11 @@ export interface SensorData {
 }
 
 export interface DiagnosisResult {
-  status: string;          // '건강함' | '주의' | '위험'
-  // confidence: number;      // 0 ~ 100
-  recommendations: string[];
+  diagnosisId: number;
+  plantId: number;
+  title: string;
+  details: string;
+  result: string;
+  imageUrl: string;
+  diagnosisDate: string;
 }

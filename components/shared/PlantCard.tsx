@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ChevronRight } from 'lucide-react-native';
 import { Colors, BorderRadius, FontSize, Spacing } from '../../theme';
 
 interface PlantCardProps {
@@ -18,11 +18,9 @@ export function PlantCard({ name, species, image, statusText, onPress }: PlantCa
       <Image source={{ uri: image }} style={styles.image} />
       <View style={styles.content}>
         <Text style={styles.name} numberOfLines={1}>{name}</Text>
-        <Text style={styles.sub} numberOfLines={1}>
-          {statusText || species}
-        </Text>
+        <Text style={styles.sub} numberOfLines={1}>{statusText || species}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color={Colors.textTertiary} />
+      <ChevronRight size={20} color={Colors.textTertiary} />
     </TouchableOpacity>
   );
 }
@@ -42,16 +40,14 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: Colors.borderLight,
+    marginBottom: Spacing.md,
   },
   image: {
     width: 64,
     height: 64,
     borderRadius: BorderRadius.md,
   },
-  content: {
-    flex: 1,
-    gap: 2,
-  },
+  content: { flex: 1 },
   name: {
     fontSize: FontSize.base,
     fontWeight: '600',
@@ -60,5 +56,6 @@ const styles = StyleSheet.create({
   sub: {
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    marginTop: 2,
   },
 });
