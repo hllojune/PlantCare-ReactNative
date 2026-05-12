@@ -7,7 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { Home as HomeIcon } from 'lucide-react-native';
 
-// API 파일에서 방금 만든 함수 불러오기
+// API 파일에서 restoreAuth() 함수 불러오기
 import { restoreAuth } from './services/api';
 
 // Screens
@@ -76,40 +76,11 @@ function MainTabNavigator() {
 
 // 💡 전체 스택 네비게이터 (앱의 최상위 라우터)
 export default function App() {
-  const [isReady, setIsReady] = useState(false);
-  const [initialRoute, setInitialRoute] = useState('onboarding'); // 기본값은 온보딩 화면
-
-  useEffect(() => {
-    const initApp = async () => {
-      // 기기에 저장된 토큰이 있는지 확인
-      const hasToken = await restoreAuth();
-
-      if (hasToken) {
-        // 토큰이 있다면 바로 메인 탭으로 이동시킴
-        setInitialRoute('MainTabs');
-      }
-
-      // 검사가 끝나면 앱을 보여줌
-      setIsReady(true);
-    };
-
-    initApp();
-  }, []);
-
-  // 토큰을 검사하는 찰나의 순간 동안 보여줄 로딩 화면
-  if (!isReady) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background }}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
-    );
-  }
-
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName={initialRoute}
+        <Stack.Navigator 
+          initialRouteName="onboarding" 
           screenOptions={{ headerShown: false }} // 모든 화면에서 기본 헤더 숨김
         >
           {/* 인증 및 온보딩 (바텀 탭 없음) */}
