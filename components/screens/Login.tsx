@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { Sprout, User, EyeOff, Eye, X, Check } from 'lucide-react-native';
 
-import { authApi, setNickname, setToken } from '../../services/api';
+import { authApi, setAuthData } from '../../services/api';
 
 const googleAccounts = [
   { name: '김플랜트', email: 'kimplant@gmail.com', color: '#4285F4' },
@@ -80,8 +80,7 @@ export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) 
       setUserIdError('');
       setPasswordError('');
       const { token, nickname } = await authApi.login(userId.trim(), password);
-      setToken(token);
-      setNickname(nickname);
+      await setAuthData(token, nickname);
       onNavigate('MainTabs');
     } catch (error) {
       const message = error instanceof Error ? error.message : '로그인에 실패했습니다.';

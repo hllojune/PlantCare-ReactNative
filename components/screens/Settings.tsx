@@ -8,6 +8,9 @@ import {
   Camera, Wifi, HelpCircle, FileText, Trash2, LogOut,
   Sprout, Mail, Pencil, X,
 } from 'lucide-react-native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
+
+import { clearAuthData } from '../../services/api';
 
 // ─── Custom Toggle ────────────────────────────────────────
 function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
@@ -94,6 +97,7 @@ function SettingItem({ icon: Icon, label, value, onPress, isToggle = false, enab
 
 // ─── Main Screen ──────────────────────────────────────────
 export function Settings({ onNavigate }: { onNavigate: (screen: string) => void }) {
+  const navigation = useNavigation();
   const [pushEnabled, setPushEnabled] = useState(true);
   const [waterReminder, setWaterReminder] = useState(true);
   const [sensorAlert, setSensorAlert] = useState(true);
@@ -175,7 +179,18 @@ export function Settings({ onNavigate }: { onNavigate: (screen: string) => void 
       <ConfirmModal
         visible={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
-        onConfirm={() => { setShowLogoutModal(false); onNavigate('onboarding'); }}
+        onConfirm={async () => {
+          setShowLogoutModal(false);
+          // 1. 기기에서 토큰 및 닉네임 삭제
+          await clearAuthData();
+          // 2. 네비게이션 스택을 완전히 비우고 온보딩 화면으로 리셋
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'onboarding' }], // App.tsx에 등록된 화면 이름에 맞게 대소문자 주의!
+            })
+          );
+        }}
         title="로그아웃 하시겠어요?"
         desc="다음에 다시 만나요!"
         confirmLabel="로그아웃"
@@ -184,7 +199,16 @@ export function Settings({ onNavigate }: { onNavigate: (screen: string) => void 
       <ConfirmModal
         visible={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        onConfirm={() => { setShowDeleteModal(false); onNavigate('onboarding'); }}
+        onConfirm={async () => {
+          setShowDeleteModal(false);
+          await clearAuthData();
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'onboarding' }],
+            })
+          );
+        }}
         title="정말 계정을 삭제하시겠어요?"
         desc="모든 식물 데이터와 일지 기록이 영구 삭제됩니다."
         confirmLabel="탈퇴하기"

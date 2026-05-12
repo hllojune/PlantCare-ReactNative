@@ -1,13 +1,18 @@
-import axios, { AxiosError, AxiosHeaders } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Platform } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 
-const DEVICE_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_DEVICE || 'http://192.168.219.51:8080';
-const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_WEB || 'http://localhost:8080';
+const DEVICE_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_DEVICE || 'http://192.168.68.59:8082';
+const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_WEB || 'http://192.168.68.59:8082';
 
 const BASE_URL = Platform.OS === 'web' ? WEB_BASE_URL : DEVICE_BASE_URL;
 
 export { BASE_URL };
 
+const TOKEN_KEY = 'authToken';
+const NICKNAME_KEY = 'userNickname';
+
+// 앱이 실행되는 동안 사용할 메모리 캐시 (매번 디스크에서 읽으면 느리므로)
 let authToken: string | null = null;
 let currentNickname = '';
 
@@ -28,6 +33,55 @@ export function getNickname() {
   return currentNickname;
 }
 
+/**
+ * [추가된 부분 1] 앱 시작 시 저장된 토큰을 불러오는 함수
+ */
+export const restoreAuth = async (): Promise<boolean> => {
+  try {
+    const token = await SecureStore.getItemAsync(TOKEN_KEY);
+    const nickname = await SecureStore.getItemAsync(NICKNAME_KEY);
+
+    if (token) {
+      authToken = token;
+      currentNickname = nickname || '';
+      return true; // 복원 성공 (자동 로그인)
+    }
+  } catch (error) {
+    console.error('토큰 복원 실패:', error);
+  }
+  return false; // 복원 실패 (로그인 필요)
+};
+
+/**
+ * [추가된 부분 2] 로그인 성공 시 토큰과 닉네임을 기기에 저장하는 함수
+ * (Login.tsx에서 로그인 API 성공 직후 호출해야 함)
+ */
+export const setAuthData = async (token: string, nickname: string) => {
+  try {
+    authToken = token;
+    currentNickname = nickname;
+    await SecureStore.setItemAsync(TOKEN_KEY, token);
+    await SecureStore.setItemAsync(NICKNAME_KEY, nickname);
+  } catch (error) {
+    console.error('토큰 저장 실패:', error);
+  }
+};
+
+/**
+ * [추가된 부분 3] 로그아웃 시 기기에서 토큰을 삭제하는 함수
+ * (Settings.tsx의 로그아웃 버튼에서 호출해야 함)
+ */
+export const clearAuthData = async () => {
+  try {
+    authToken = null;
+    currentNickname = '';
+    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await SecureStore.deleteItemAsync(NICKNAME_KEY);
+  } catch (error) {
+    console.error('토큰 삭제 실패:', error);
+  }
+};
+
 interface ApiResponse<T> {
   code: number;
   message: string;
@@ -36,20 +90,23 @@ interface ApiResponse<T> {
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
+  timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+/**
+ * Axios 요청 인터셉터 (F2 문제 해결)
+ * 모든 백엔드 요청 헤더에 Authorization 토큰을 자동으로 실어 보냅니다.
+ */
 apiClient.interceptors.request.use((config) => {
-  const headers = AxiosHeaders.from(config.headers);
-
   if (authToken) {
-    headers.set('Authorization', `Bearer ${authToken}`);
+    config.headers.Authorization = `Bearer ${authToken}`;
   }
-
-  config.headers = headers;
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
 
 function toErrorMessage(error: unknown) {
