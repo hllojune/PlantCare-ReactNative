@@ -4,8 +4,12 @@ import {
   SafeAreaView, Platform, StatusBar, Animated,
 } from 'react-native';
 import { ArrowLeft, Plus, Activity, Thermometer, Wind, Droplets } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 
-export function SensorDashboard({ navigation }: { navigation: any }) {
+export function SensorDashboard() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pingAnim = useRef(new Animated.Value(0.75)).current;
 
   useEffect(() => {
@@ -27,7 +31,7 @@ export function SensorDashboard({ navigation }: { navigation: any }) {
           <ArrowLeft color="#374151" size={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>실시간 센서</Text>
-        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('sensor-register')}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('SensorRegister')}>
           <Plus color="#3a7d44" size={24} />
         </TouchableOpacity>
       </View>

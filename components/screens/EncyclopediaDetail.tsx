@@ -1,6 +1,9 @@
 import React from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Platform, StatusBar, Dimensions } from 'react-native';
 import { ChevronLeft, Heart, Droplets, Sun, Thermometer, CloudRain, Plus, SquarePen } from 'lucide-react-native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 const { width } = Dimensions.get('window');
 const data: Record<string,any> = {
   e1:{ name:'몬스테라 델리시오사', scientificName:'Monstera Deliciosa', image:'https://images.unsplash.com/photo-1608327624934-69f40c5a819b?w=800', difficulty:'보통', description:'매력적인 구멍이 뚫린 커다란 잎이 특징인 열대 관엽식물입니다. 실내 환경에 잘 적응하며 공기 정화 능력이 뛰어납니다.', care:{ water:'겉흙이 말랐을 때 듬뿍', light:'반그늘에서 잘 자라요', temperature:'18–25°C (최저 15°C)', humidity:'60% 이상 (다습)' } },
@@ -8,13 +11,16 @@ const data: Record<string,any> = {
 const CareCard = ({ icon, label, value }:any) => (
   <View style={s.careCard}><View style={s.careIcon}>{icon}</View><Text style={s.careLabel}>{label}</Text><Text style={s.careValue}>{value}</Text></View>
 );
-export function EncyclopediaDetail({ onNavigate, plantId }:{ onNavigate:(s:string,id?:string)=>void; plantId:string|null }) {
-  const plant = (plantId && data[plantId]) || data.e1;
+export function EncyclopediaDetail() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'EncyclopediaDetail'>>();
+  const { plantId } = route.params;
+  const plant = data[plantId] || data.e1;
   return (
     <View style={s.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent/>
       <View style={s.floatingHeader}>
-        <TouchableOpacity style={s.headerBtn} onPress={()=>onNavigate('encyclopedia')}><ChevronLeft color="#111827" size={24}/></TouchableOpacity>
+        <TouchableOpacity style={s.headerBtn} onPress={()=>navigation.goBack()}><ChevronLeft color="#111827" size={24}/></TouchableOpacity>
         <TouchableOpacity style={s.headerBtn}><Heart color="#EF4444" size={24}/></TouchableOpacity>
       </View>
       <ScrollView bounces={false} showsVerticalScrollIndicator={false} contentContainerStyle={s.scrollContent}>
@@ -38,10 +44,10 @@ export function EncyclopediaDetail({ onNavigate, plantId }:{ onNavigate:(s:strin
             </View>
           </View>
           <View style={s.actionContainer}>
-            <TouchableOpacity style={s.primaryBtn} onPress={()=>onNavigate('add-plant')}>
+            <TouchableOpacity style={s.primaryBtn} onPress={()=>navigation.navigate('AddPlant')}>
               <Plus color="#ffffff" size={20}/><Text style={s.primaryBtnText}>내 식물로 등록하기</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={s.secondaryBtn} onPress={()=>onNavigate('diary-write')}>
+            <TouchableOpacity style={s.secondaryBtn} onPress={()=>navigation.navigate('DiaryWrite')}>
               <SquarePen color="#3a7d44" size={18}/><Text style={s.secondaryBtnText}>성장 기록 쓰기</Text>
             </TouchableOpacity>
           </View>

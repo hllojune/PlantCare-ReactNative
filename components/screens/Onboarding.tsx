@@ -5,6 +5,9 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowRight, Sprout } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 
 const { width } = Dimensions.get('window');
 
@@ -31,11 +34,8 @@ const slides = [
   },
 ];
 
-interface OnboardingProps {
-  onNavigate: (screen: string) => void;
-}
-
-export function Onboarding({ onNavigate }: OnboardingProps) {
+export function Onboarding() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [current, setCurrent] = useState(0);
   const isLast = current === slides.length - 1;
   const slide = slides[current];
@@ -53,7 +53,7 @@ export function Onboarding({ onNavigate }: OnboardingProps) {
             <Text style={styles.logoText}>PlantCare</Text>
           </View>
           {!isLast && (
-            <TouchableOpacity onPress={() => onNavigate('login')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
               <Text style={styles.skipText}>건너뛰기</Text>
             </TouchableOpacity>
           )}
@@ -94,7 +94,7 @@ export function Onboarding({ onNavigate }: OnboardingProps) {
           <TouchableOpacity
             style={styles.mainButton}
             activeOpacity={0.9}
-            onPress={() => isLast ? onNavigate('login') : setCurrent(current + 1)}
+            onPress={() => isLast ? navigation.navigate('Login') : setCurrent(current + 1)}
           >
             <Text style={styles.mainButtonText}>{isLast ? '시작하기' : '다음'}</Text>
             <ArrowRight color="#ffffff" size={20} />
@@ -103,7 +103,7 @@ export function Onboarding({ onNavigate }: OnboardingProps) {
           {current === 0 ? (
             <View style={styles.loginRow}>
               <Text style={styles.loginHint}>이미 계정이 있으신가요? </Text>
-              <TouchableOpacity onPress={() => onNavigate('login')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Login')}>
                 <Text style={styles.loginLink}>로그인</Text>
               </TouchableOpacity>
             </View>

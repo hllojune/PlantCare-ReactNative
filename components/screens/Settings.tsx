@@ -9,6 +9,8 @@ import {
   Sprout, Mail, Pencil, X,
 } from 'lucide-react-native';
 import { useNavigation, CommonActions } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 
 import { clearAuthData } from '../../services/api';
 
@@ -96,8 +98,8 @@ function SettingItem({ icon: Icon, label, value, onPress, isToggle = false, enab
 }
 
 // ─── Main Screen ──────────────────────────────────────────
-export function Settings({ onNavigate }: { onNavigate: (screen: string) => void }) {
-  const navigation = useNavigation();
+export function Settings() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [pushEnabled, setPushEnabled] = useState(true);
   const [waterReminder, setWaterReminder] = useState(true);
   const [sensorAlert, setSensorAlert] = useState(true);
@@ -112,7 +114,7 @@ export function Settings({ onNavigate }: { onNavigate: (screen: string) => void 
 
       {/* AppBar */}
       <View style={styles.appBar}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => onNavigate('home')}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
           <ArrowLeft color="#374151" size={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>환경설정</Text>
@@ -187,7 +189,7 @@ export function Settings({ onNavigate }: { onNavigate: (screen: string) => void 
           navigation.dispatch(
             CommonActions.reset({
               index: 0,
-              routes: [{ name: 'onboarding' }], // App.tsx에 등록된 화면 이름에 맞게 대소문자 주의!
+              routes: [{ name: 'Onboarding' }], // App.tsx에 등록된 화면 이름에 맞게 대소문자 주의!
             })
           );
         }}
@@ -205,7 +207,7 @@ export function Settings({ onNavigate }: { onNavigate: (screen: string) => void 
           navigation.dispatch(
             CommonActions.reset({
               index: 0,
-              routes: [{ name: 'onboarding' }],
+              routes: [{ name: 'Onboarding' }],
             })
           );
         }}

@@ -2,8 +2,9 @@ import axios, { AxiosError } from 'axios';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
-const DEVICE_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_DEVICE || 'http://192.168.68.59:8082';
-const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_WEB || 'http://192.168.68.59:8082';
+const DEVICE_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_DEVICE || 'http://localhost:8080';
+const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_WEB || 'http://localhost:8080';
+
 
 const BASE_URL = Platform.OS === 'web' ? WEB_BASE_URL : DEVICE_BASE_URL;
 
@@ -174,6 +175,21 @@ export const plantApi = {
   delete: (id: string) => request<void>({ url: `/plant/${id}`, method: 'DELETE' }),
 };
 
+// plant-service의 도감 API: 응답 래퍼 없이 DTO/배열을 그대로 반환한다고 가정.
+export const bookApi = {
+  getAll: () => request<PlantBookItem[]>({ url: '/book', method: 'GET' }),
+  search: (name: string) =>
+    request<PlantBookItem[]>({
+      url: `/book/search?name=${encodeURIComponent(name)}`,
+      method: 'GET',
+    }),
+  getById: (speciesCode: string) =>
+    request<PlantBookItem>({
+      url: `/book/${encodeURIComponent(speciesCode)}`,
+      method: 'GET',
+    }),
+};
+
 export const sensorApi = {
   getLatest: () => request<SensorData>({ url: '/sensor/latest', method: 'GET' }),
   getHistory: (plantId: string) =>
@@ -235,4 +251,12 @@ export interface DiagnosisResult {
   result: string;
   imageUrl: string;
   diagnosisDate: string;
+}
+
+export interface PlantBookItem {
+  speciesCode: string;
+  name: string;
+  scientificName?: string;
+  imageUrl?: string;
+  difficulty?: string;
 }

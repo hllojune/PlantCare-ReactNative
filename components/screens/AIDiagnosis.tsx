@@ -7,6 +7,15 @@ import {
   ArrowLeft, X, Search, ScanLine, Check, Activity,
   Image as ImageIcon, RotateCcw, BookOpen, Sparkles,
 } from 'lucide-react-native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainTabParamList, RootStackParamList } from '../../App';
+
+type AIDiagnosisNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList, 'AIDiagnosis'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 const { width } = Dimensions.get('window');
 
@@ -18,7 +27,8 @@ const recentSearches = [
 
 type Step = 'entry' | 'scan' | 'analyzing' | 'identified' | 'health';
 
-export function AIDiagnosis({ onNavigate }: { onNavigate: (screen: string) => void }) {
+export function AIDiagnosis() {
+  const navigation = useNavigation<AIDiagnosisNavigationProp>();
   const [step, setStep] = useState<Step>('entry');
   const [saved, setSaved] = useState(false);
 
@@ -31,7 +41,7 @@ export function AIDiagnosis({ onNavigate }: { onNavigate: (screen: string) => vo
 
   const handleSave = () => {
     setSaved(true);
-    setTimeout(() => onNavigate('diary'), 1500);
+    setTimeout(() => navigation.navigate('Diary'), 1500);
   };
 
   return (
@@ -42,14 +52,14 @@ export function AIDiagnosis({ onNavigate }: { onNavigate: (screen: string) => vo
       <View style={[styles.appBar, step === 'scan' && { backgroundColor: '#000', borderBottomWidth: 0 }]}>
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={() => (step === 'entry' ? onNavigate('home') : step === 'health' ? setStep('identified') : setStep('entry'))}
+          onPress={() => (step === 'entry' ? navigation.navigate('Home') : step === 'health' ? setStep('identified') : setStep('entry'))}
         >
           <ArrowLeft color={step === 'scan' ? '#ffffff' : '#374151'} size={24} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, step === 'scan' && { color: '#ffffff' }]}>
           {step === 'entry' ? 'AI 식물 진단' : step === 'scan' ? '식물 스캔' : step === 'analyzing' ? '분석 중' : '진단 결과'}
         </Text>
-        <TouchableOpacity style={styles.iconButton} onPress={() => onNavigate('home')}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Home')}>
           <X color={step === 'scan' ? '#ffffff' : '#374151'} size={24} />
         </TouchableOpacity>
       </View>

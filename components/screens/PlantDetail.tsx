@@ -1,11 +1,15 @@
 import React from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, Dimensions, Platform, StatusBar } from 'react-native';
 import { ChevronLeft, MoreVertical, Droplets, Sun, Thermometer, Calendar, PlusCircle, Settings } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 const { width } = Dimensions.get('window');
 const SensorWidget = ({ label, value, icon, status }:any) => (
   <View style={s.sensorWidget}>{icon}<Text style={s.sensorValue}>{value}</Text><Text style={s.sensorLabel}>{label}</Text><View style={s.statusTag}><Text style={s.statusTagText}>{status}</Text></View></View>
 );
-export function PlantDetail({ route, navigation }:{ route:any; navigation:any }) {
+export function PlantDetail() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="light-content"/>
@@ -36,7 +40,7 @@ export function PlantDetail({ route, navigation }:{ route:any; navigation:any })
           <View style={s.sectionContainer}>
             <View style={s.sectionHeader}>
               <Text style={s.sectionTitle}>실시간 상태</Text>
-              <TouchableOpacity onPress={()=>navigation.navigate('sensor')}><Text style={s.detailLink}>상세 보기</Text></TouchableOpacity>
+              <TouchableOpacity onPress={()=>navigation.navigate('SensorDashboard')}><Text style={s.detailLink}>상세 보기</Text></TouchableOpacity>
             </View>
             <View style={s.sensorGrid}>
               <SensorWidget label="토양 수분" value="45%" icon={<Droplets color="#3B82F6" size={24}/>} status="적정"/>
@@ -47,14 +51,14 @@ export function PlantDetail({ route, navigation }:{ route:any; navigation:any })
           <View style={s.sectionContainer}>
             <View style={s.sectionHeader}>
               <Text style={s.sectionTitle}>성장 일지</Text>
-              <TouchableOpacity onPress={()=>navigation.navigate('diary-write')}><PlusCircle color="#3a7d44" size={24}/></TouchableOpacity>
+              <TouchableOpacity onPress={()=>navigation.navigate('DiaryWrite')}><PlusCircle color="#3a7d44" size={24}/></TouchableOpacity>
             </View>
             <View style={s.diaryCard}>
               <Text style={s.diaryDate}>2024.05.20</Text>
               <Text style={s.diaryContent}>새 잎이 돋아나기 시작했어요! 너무 귀여워요.</Text>
             </View>
           </View>
-          <TouchableOpacity style={s.secondaryBtn} onPress={()=>navigation.navigate('sensor-register')}>
+          <TouchableOpacity style={s.secondaryBtn} onPress={()=>navigation.navigate('SensorRegister')}>
             <Settings color="#374151" size={20}/>
             <Text style={s.secondaryBtnText}>센서 및 장치 설정</Text>
           </TouchableOpacity>

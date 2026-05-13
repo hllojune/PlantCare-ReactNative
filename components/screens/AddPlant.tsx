@@ -5,8 +5,12 @@ import {
 } from 'react-native';
 import { ArrowLeft, Upload } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 
-export function AddPlant({ navigation }: { navigation: any }) {
+export function AddPlant() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [plantName, setPlantName] = useState('');
   const [memo, setMemo] = useState('');
@@ -26,7 +30,7 @@ export function AddPlant({ navigation }: { navigation: any }) {
   const handleSubmit = () => {
     // TODO: 백엔드 API 전송 로직
     console.log('등록할 식물:', { plantName, memo, imageUri });
-    navigation.navigate('home');
+    navigation.navigate('MainTabs', { screen: 'Home' });
   };
 
   return (

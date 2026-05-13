@@ -5,9 +5,19 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sprout, Sparkles, Plus } from 'lucide-react-native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainTabParamList, RootStackParamList } from '../../App';
 import { useDiaryEntries } from '../../lib/diaryStore';
 
-export function GrowthDiary({ onNavigate }: { onNavigate: (screen: string) => void }) {
+type GrowthDiaryNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList, 'Diary'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
+
+export function GrowthDiary() {
+  const navigation = useNavigation<GrowthDiaryNavigationProp>();
   const diaryEntries = useDiaryEntries();
 
   return (
@@ -73,7 +83,7 @@ export function GrowthDiary({ onNavigate }: { onNavigate: (screen: string) => vo
               <View style={styles.addDotContainer}>
                 <Plus color="#3a7d44" size={16} />
               </View>
-              <TouchableOpacity style={styles.addButton} onPress={() => onNavigate('diary-write')}>
+              <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('DiaryWrite')}>
                 <View style={styles.addIconCircle}>
                   <Sprout color="#3a7d44" size={16} />
                 </View>

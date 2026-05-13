@@ -4,3 +4,4 @@ node_modules
 expo.out.log
 expo.err.log
 .idea
+.claude/

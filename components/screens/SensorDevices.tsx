@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, Platform, StatusBar, LayoutAnimation, UIManager } from 'react-native';
 import { ArrowLeft, Cpu, Battery, BatteryLow, Plus, ChevronRight, ChevronDown, Power, AlertCircle, Signal } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) UIManager.setLayoutAnimationEnabledExperimental(true);
 const devices = [
   { id:'d1', nickname:'거실 창가 센서', mac:'AA:BB:CC:DD:EE:01', plantName:'몬스테라 델리시오사', online:true, battery:78, signal:4, firmware:'v1.4.2', ssid:'Home_WiFi_5G', lastSync:'방금 전', threshold:30, duration:3000 },
   { id:'d2', nickname:'베란다 센서',    mac:'AA:BB:CC:DD:EE:02', plantName:'연결된 식물 없음',    online:false, battery:15, signal:1, firmware:'v1.4.0', ssid:'Home_WiFi_2.4G', lastSync:'2일 전', threshold:40, duration:5000 },
 ];
-export function SensorDevices({ onNavigate }:{ onNavigate:(s:string)=>void }) {
+export function SensorDevices() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [devList, setDevList] = useState(devices);
   const [expanded, setExpanded] = useState<string|null>(devices[0]?.id||null);
   const [confirmId, setConfirmId] = useState<string|null>(null);
@@ -16,9 +20,9 @@ export function SensorDevices({ onNavigate }:{ onNavigate:(s:string)=>void }) {
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff"/>
       <View style={s.appBar}>
-        <TouchableOpacity style={s.iconBtn} onPress={()=>onNavigate('settings')}><ArrowLeft color="#374151" size={24}/></TouchableOpacity>
+        <TouchableOpacity style={s.iconBtn} onPress={()=>navigation.goBack()}><ArrowLeft color="#374151" size={24}/></TouchableOpacity>
         <Text style={s.headerTitle}>기기 관리</Text>
-        <TouchableOpacity style={s.iconBtn} onPress={()=>onNavigate('sensor-register')}><Plus color="#3a7d44" size={24}/></TouchableOpacity>
+        <TouchableOpacity style={s.iconBtn} onPress={()=>navigation.navigate('SensorRegister')}><Plus color="#3a7d44" size={24}/></TouchableOpacity>
       </View>
       <ScrollView style={s.container} contentContainerStyle={s.scroll}>
         {devList.map(d => {

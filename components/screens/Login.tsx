@@ -15,6 +15,9 @@ import {
   Alert,
 } from 'react-native';
 import { Sprout, User, EyeOff, Eye, X, Check } from 'lucide-react-native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 
 import { authApi, setAuthData } from '../../services/api';
 
@@ -23,7 +26,8 @@ const googleAccounts = [
   { name: 'Garden Lover', email: 'gardenlover@gmail.com', color: '#34A853' },
 ];
 
-export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) {
+export function Login() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -46,7 +50,12 @@ export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) 
     setTimeout(() => {
       setIsModalOpen(false);
       setStage('choose');
-      onNavigate('MainTabs');
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'MainTabs' }],
+        })
+      );
     }, 2100);
   };
 
@@ -81,7 +90,12 @@ export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) 
       setPasswordError('');
       const { token, nickname } = await authApi.login(userId.trim(), password);
       await setAuthData(token, nickname);
-      onNavigate('MainTabs');
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'MainTabs' }],
+        })
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : '로그인에 실패했습니다.';
 
@@ -136,7 +150,7 @@ export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) 
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
                 <Text style={styles.label}>비밀번호</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
                   <Text style={styles.forgotText}>비밀번호 찾기</Text>
                 </TouchableOpacity>
               </View>
@@ -193,7 +207,7 @@ export function Login({ onNavigate }: { onNavigate: (screen: string) => void }) 
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>아직 계정이 없으신가요? </Text>
-            <TouchableOpacity onPress={() => onNavigate('signup')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
               <Text style={styles.signupLink}>회원가입</Text>
             </TouchableOpacity>
           </View>

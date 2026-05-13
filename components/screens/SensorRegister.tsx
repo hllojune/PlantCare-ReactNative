@@ -7,6 +7,9 @@ import Slider from '@react-native-community/slider';
 import {
   ArrowLeft, Wifi, WifiOff, Cpu, Check, Droplets, Timer, Minus, Plus,
 } from 'lucide-react-native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 
 const mockUnlinkedDevices = [
   { deviceId: 'AA:BB:CC:DD:EE:01', active: true },
@@ -24,13 +27,10 @@ const mockPlants = [
 type Step = 'wifi' | 'select-device' | 'name-device' | 'link-plant' | 'settings' | 'complete';
 type WifiStatus = 'checking' | 'connected' | 'disconnected';
 
-interface SensorRegisterProps {
-  onNavigate: (screen: string, plantId?: string) => void;
-  plantId?: string | null;
-  navigation?: any;
-}
-
-export function SensorRegister({ onNavigate, plantId, navigation }: SensorRegisterProps) {
+export function SensorRegister() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'SensorRegister'>>();
+  const plantId = route.params?.plantId ?? null;
   const [step, setStep] = useState<Step>('wifi');
   const [isScanning, setIsScanning] = useState(false);
   const [wifiStatus, setWifiStatus] = useState<WifiStatus>('checking');
@@ -64,15 +64,13 @@ export function SensorRegister({ onNavigate, plantId, navigation }: SensorRegist
   };
 
   const handleComplete = () => {
-    if (navigation) navigation.navigate('sensor');
-    else onNavigate('sensor');
+    navigation.navigate('SensorDashboard');
   };
 
   const goBack = () => {
     const idx = steps.indexOf(step);
     if (idx === 0) {
-      if (navigation) navigation.goBack();
-      else onNavigate('sensor');
+      navigation.goBack();
     } else {
       setStep(steps[idx - 1]);
     }

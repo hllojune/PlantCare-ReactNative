@@ -4,26 +4,35 @@ import {
   StyleSheet, SafeAreaView, Platform, StatusBar,
 } from 'react-native';
 import { Plus, Bell, CloudRain } from 'lucide-react-native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainTabParamList, RootStackParamList } from '../../App';
 import { PlantCard } from '../shared/PlantCard';
 import { getNickname } from '../../services/api';
 
+type HomeNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList, 'Home'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
+
 const mockPlants = [
   {
-    id: '1',
+    id: 1,
     name: '몬스테라',
     species: 'Monstera Deliciosa',
     image: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400',
     statusText: '2일 후 물을 줄 예정이에요',
   },
   {
-    id: '2',
+    id: 2,
     name: '산세베리아',
     species: 'Sansevieria trifasciata',
     image: 'https://images.unsplash.com/photo-1593482892290-f54927ae1bb6?w=400',
     statusText: '조명 상태가 좋아요',
   },
   {
-    id: '3',
+    id: 3,
     name: '보스턴 고사리',
     species: 'Nephrolepis exaltata',
     image: 'https://images.unsplash.com/photo-1593691509543-c55fb32d8de5?w=400',
@@ -31,12 +40,8 @@ const mockPlants = [
   },
 ];
 
-interface HomeProps { navigation: any; }
-
-export function Home({ navigation }: HomeProps) {
-  const onNavigate = (screen: string, params: Record<string, unknown> = {}) =>
-    navigation.navigate(screen, params);
-
+export function Home() {
+  const navigation = useNavigation<HomeNavigationProp>();
   const nickname = getNickname() || '플랜트';
 
   return (
@@ -45,11 +50,11 @@ export function Home({ navigation }: HomeProps) {
         <View style={styles.appBar}>
           <Text style={styles.appTitle}>PlantCare</Text>
           <View style={styles.appBarRight}>
-            <TouchableOpacity style={styles.iconButton} onPress={() => onNavigate('notifications')}>
+            <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Notifications')}>
               <Bell color="#374151" size={24} />
               <View style={styles.badge} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.profileButton} onPress={() => onNavigate('settings')}>
+            <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Settings')}>
               <Image
                 source={{ uri: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120' }}
                 style={styles.profileImage}
@@ -86,11 +91,11 @@ export function Home({ navigation }: HomeProps) {
               <PlantCard
                 key={plant.id}
                 {...plant}
-                onPress={() => onNavigate('detail', { plantId: plant.id })}
+                onPress={() => navigation.navigate('PlantDetail', { plantId: plant.id })}
               />
             ))}
 
-            <TouchableOpacity style={styles.addPlantButton} onPress={() => onNavigate('add-plant')}>
+            <TouchableOpacity style={styles.addPlantButton} onPress={() => navigation.navigate('AddPlant')}>
               <View style={styles.addIconCircle}>
                 <Plus color="#9CA3AF" size={20} />
               </View>

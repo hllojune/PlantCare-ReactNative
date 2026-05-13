@@ -1,18 +1,57 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Image, StyleSheet, SafeAreaView, Platform, StatusBar, Dimensions } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Image, StyleSheet, SafeAreaView, Platform, StatusBar, Dimensions, ActivityIndicator } from 'react-native';
 import { Search, SlidersHorizontal } from 'lucide-react-native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainTabParamList, RootStackParamList } from '../../App';
+import { bookApi, PlantBookItem } from '../../services/api';
+
+type EncyclopediaNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList, 'Encyclopedia'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2;
 const CATEGORIES = ['전체','초보자용','다육식물','관엽식물','꽃/열매','공기정화'];
-const DATA = [
-  { id:'e1', name:'몬스테라',   species:'Monstera Deliciosa', difficulty:'쉬움', image:'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400' },
-  { id:'e2', name:'산세베리아', species:'Sansevieria',        difficulty:'매우 쉬움', image:'https://images.unsplash.com/photo-1593482892290-f54927ae1bb6?w=400' },
-  { id:'e3', name:'알로카시아', species:'Alocasia',           difficulty:'보통', image:'https://images.unsplash.com/photo-1620127027376-7bcbc170d10d?w=400' },
-  { id:'e4', name:'필로덴드론', species:'Philodendron',       difficulty:'쉬움', image:'https://images.unsplash.com/photo-1604762512526-b7ce049b576e?w=400' },
-];
-export function PlantEncyclopedia({ navigation }: { navigation: any }) {
+
+export function PlantEncyclopedia() {
+  const navigation = useNavigation<EncyclopediaNavigationProp>();
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('전체');
+  const [plants, setPlants] = useState<PlantBookItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadAll = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await bookApi.getAll();
+      setPlants(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('도감 데이터를 불러오는데 실패했습니다:', error);
+      setPlants([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  const handleSearch = async () => {
+    const keyword = q.trim();
+    if (!keyword) { loadAll(); return; }
+    setIsLoading(true);
+    try {
+      const data = await bookApi.search(keyword);
+      setPlants(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('도감 검색에 실패했습니다:', error);
+      setPlants([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff"/>
@@ -20,9 +59,9 @@ export function PlantEncyclopedia({ navigation }: { navigation: any }) {
       <View style={s.searchSection}>
         <View style={s.searchBar}>
           <Search color="#9CA3AF" size={20}/>
-          <TextInput style={s.searchInput} placeholder="식물 이름이나 학명 검색" placeholderTextColor="#9CA3AF" value={q} onChangeText={setQ}/>
+          <TextInput style={s.searchInput} placeholder="식물 이름이나 학명 검색" placeholderTextColor="#9CA3AF" value={q} onChangeText={setQ} onSubmitEditing={handleSearch} returnKeyType="search"/>
         </View>
-        <TouchableOpacity style={s.filterBtn}><SlidersHorizontal color="#374151" size={20}/></TouchableOpacity>
+        <TouchableOpacity style={s.filterBtn} onPress={handleSearch}><SlidersHorizontal color="#374151" size={20}/></TouchableOpacity>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.catsScroll} style={{ maxHeight: 60 }}>
         {CATEGORIES.map((c) => (
@@ -32,18 +71,24 @@ export function PlantEncyclopedia({ navigation }: { navigation: any }) {
         ))}
       </ScrollView>
       <ScrollView contentContainerStyle={s.gridContent}>
-        <View style={s.grid}>
-          {DATA.filter(p => !q || p.name.includes(q)).map(plant => (
-            <TouchableOpacity key={plant.id} style={s.card} onPress={() => navigation.navigate('encyclopedia-detail', { plantId: plant.id })}>
-              <Image source={{ uri: plant.image }} style={s.cardImage}/>
-              <View style={s.cardInfo}>
-                <Text style={s.plantName}>{plant.name}</Text>
-                <Text style={s.plantSpecies}>{plant.species}</Text>
-                <View style={s.tag}><Text style={s.tagText}>{plant.difficulty}</Text></View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {isLoading ? (
+          <View style={s.loadingWrap}><ActivityIndicator size="large" color="#3a7d44"/></View>
+        ) : plants.length === 0 ? (
+          <Text style={s.emptyText}>조건에 맞는 식물이 없습니다.</Text>
+        ) : (
+          <View style={s.grid}>
+            {plants.map(plant => (
+              <TouchableOpacity key={plant.speciesCode} style={s.card} onPress={() => navigation.navigate('EncyclopediaDetail', { plantId: plant.speciesCode })}>
+                <Image source={plant.imageUrl ? { uri: plant.imageUrl } : undefined} style={s.cardImage}/>
+                <View style={s.cardInfo}>
+                  <Text style={s.plantName}>{plant.name}</Text>
+                  {plant.scientificName ? <Text style={s.plantSpecies}>{plant.scientificName}</Text> : null}
+                  {plant.difficulty ? <View style={s.tag}><Text style={s.tagText}>{plant.difficulty}</Text></View> : null}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -70,4 +115,6 @@ const s = StyleSheet.create({
   plantSpecies:{ fontSize:12, color:'#6B7280', marginTop:2, fontStyle:'italic' },
   tag:{ alignSelf:'flex-start', backgroundColor:'#F3F4F6', paddingHorizontal:8, paddingVertical:4, borderRadius:6, marginTop:8 },
   tagText:{ fontSize:11, fontWeight:'600', color:'#4B5563' },
+  loadingWrap:{ paddingVertical:60, alignItems:'center', justifyContent:'center' },
+  emptyText:{ textAlign:'center', marginTop:60, color:'#6B7280', fontSize:14 },
 });

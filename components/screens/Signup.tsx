@@ -15,10 +15,14 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Leaf, ArrowRight, User, Mail, Lock, IdCard } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 
 import { authApi } from '../../services/api';
 
-export function Signup({ onNavigate }: { onNavigate: (screen: string) => void }) {
+export function Signup() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [userId, setUserId] = useState('');
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
@@ -74,7 +78,7 @@ export function Signup({ onNavigate }: { onNavigate: (screen: string) => void })
 
     try {
       await authApi.signup(userId.trim(), nickname.trim(), email.trim(), password);
-      onNavigate('login');
+      navigation.navigate('Login');
     } catch (error) {
       const message = error instanceof Error ? error.message : '회원가입에 실패했습니다.';
 
@@ -211,7 +215,7 @@ export function Signup({ onNavigate }: { onNavigate: (screen: string) => void })
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>이미 계정이 있으신가요? </Text>
-              <TouchableOpacity onPress={() => onNavigate('login')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Login')}>
                 <Text style={styles.loginLink}>로그인</Text>
               </TouchableOpacity>
             </View>

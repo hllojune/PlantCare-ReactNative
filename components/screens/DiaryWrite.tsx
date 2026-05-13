@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, Alert, StatusBar } from 'react-native';
 import { ArrowLeft, Camera, Calendar, Clock, Leaf, Check } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 import { addDiaryEntry } from '../../lib/diaryStore';
 const myPlants = [{ id:'1', name:'몬스테라 델리시오사', emoji:'🌿' },{ id:'2', name:'산세베리아', emoji:'🪴' },{ id:'3', name:'보스턴 고사리', emoji:'🌱' },{ id:'4', name:'다육이 삼총사', emoji:'🌵' }];
 const entryTypes = [{ id:'growth', label:'성장 기록', color:'#3a7d44' },{ id:'care', label:'일상 관리', color:'#0ea5e9' },{ id:'watering', label:'물주기', color:'#0284c7' },{ id:'repot', label:'분갈이', color:'#a16207' },{ id:'bloom', label:'개화', color:'#db2777' },{ id:'issue', label:'이상 증상', color:'#dc2626' }];
 const today = new Date(); const pad = (n:number)=>String(n).padStart(2,'0');
 const defaultDate = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
 const defaultTime = `${pad(today.getHours())}:${pad(today.getMinutes())}`;
-export function DiaryWrite({ onNavigate }:{ onNavigate:(s:string)=>void }) {
+export function DiaryWrite() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [sel, setSel] = useState(myPlants[0].id);
   const [type, setType] = useState(entryTypes[0].id);
   const [date, setDate] = useState(defaultDate);
@@ -19,13 +23,13 @@ export function DiaryWrite({ onNavigate }:{ onNavigate:(s:string)=>void }) {
     const plant = myPlants.find(p=>p.id===sel)!;
     const t = entryTypes.find(t=>t.id===type)!;
     addDiaryEntry({ date, time, plant:plant.name, image:'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400', note, type:t.label, source:'manual' });
-    Alert.alert('성공','기록이 저장되었습니다.',[{ text:'확인', onPress:()=>onNavigate('diary') }]);
+    Alert.alert('성공','기록이 저장되었습니다.',[{ text:'확인', onPress:()=>navigation.navigate('MainTabs',{ screen:'Diary' }) }]);
   };
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff"/>
       <View style={s.appBar}>
-        <TouchableOpacity style={s.iconBtn} onPress={()=>onNavigate('diary')}><ArrowLeft color="#374151" size={24}/></TouchableOpacity>
+        <TouchableOpacity style={s.iconBtn} onPress={()=>navigation.goBack()}><ArrowLeft color="#374151" size={24}/></TouchableOpacity>
         <Text style={s.headerTitle}>새 기록 쓰기</Text>
         <View style={{width:40}}/>
       </View>

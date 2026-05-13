@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react-native';
 import { Colors, BorderRadius, FontSize, Spacing } from '../../theme';
 
 interface PlantCardProps {
-  id: string;
+  id: number;
   name: string;
   species: string;
   image: string;

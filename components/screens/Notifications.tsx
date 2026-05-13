@@ -4,6 +4,9 @@ import {
   SafeAreaView, Platform, StatusBar,
 } from 'react-native';
 import { ArrowLeft, Settings, AlertTriangle, Droplets, Sparkles, Info } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../App';
 
 type CategoryTab = 'all' | 'warnings' | 'care' | 'system';
 type Notification = { id: string; type: 'warning'|'care'|'ai'|'system'; title: string; subtitle: string; timestamp: string; severity: string; isRead: boolean; date: string; };
@@ -38,7 +41,8 @@ function NotificationCard({ type, title, subtitle, timestamp, isRead }: CardProp
   );
 }
 
-export function Notifications({ onNavigate }: { onNavigate: (screen: string) => void }) {
+export function Notifications() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [selectedTab, setSelectedTab] = useState<CategoryTab>('all');
   const filtered = mockNotifications.filter((n) => {
     if (selectedTab === 'all')      return true;
@@ -63,9 +67,9 @@ export function Notifications({ onNavigate }: { onNavigate: (screen: string) => 
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <View style={styles.appBar}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => onNavigate('home')}><ArrowLeft color="#374151" size={24} /></TouchableOpacity>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}><ArrowLeft color="#374151" size={24} /></TouchableOpacity>
         <Text style={styles.headerTitle}>알림</Text>
-        <TouchableOpacity style={styles.iconButton} onPress={() => onNavigate('settings')}><Settings color="#374151" size={24} /></TouchableOpacity>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Settings')}><Settings color="#374151" size={24} /></TouchableOpacity>
       </View>
       <View style={styles.tabContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll}>
