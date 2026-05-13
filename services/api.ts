@@ -157,25 +157,30 @@ async function request<T>(config: {
   }
 }
 
+async function requestApiData<T>(config: {
+  url: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  data?: unknown;
+}) {
+  const response = await request<ApiResponse<T>>(config);
+  return response.data;
+}
+
 export const authApi = {
   async login(userId: string, password: string) {
-    const response = await request<ApiResponse<{ userId: number; token: string; nickname: string }>>({
+    return requestApiData<{ userId: number; token: string; nickname: string }>({
       url: '/auth/login',
       method: 'POST',
       data: { userId, password },
     });
-
-    return response.data;
   },
 
   async signup(userId: string, nickname: string, email: string, password: string) {
-    const response = await request<ApiResponse<string>>({
+    return requestApiData<string>({
       url: '/auth/signup',
       method: 'POST',
       data: { userId, nickname, email, password },
     });
-
-    return response.data;
   },
 };
 
@@ -208,9 +213,9 @@ export const bookApi = {
       url: `/book/search?name=${encodeURIComponent(name)}`,
       method: 'GET',
     }),
-  getById: (speciesCode: string) =>
+  getById: (speciesCode: number) =>
     request<PlantBookDetail>({
-      url: `/book/${encodeURIComponent(speciesCode)}`,
+      url: `/book/${encodeURIComponent(String(speciesCode))}`,
       method: 'GET',
     }),
 };
@@ -254,7 +259,7 @@ export interface MyPlantItem {
   userId?: number;         // 식물 주인의 ID (목록 조회 시엔 보통 생략 가능)
   plantName: string;       // 내가 지어준 식물 이름 (별명)
   speciesName?: string;    // 식물 종 이름 (예: 몬스테라)
-  speciesCode?: string;    // 도감과 연결하기 위한 종 코드
+  speciesCode?: number;    // 도감과 연결하기 위한 종 코드
   photoUrl?: string;       // 식물 사진 URL (백엔드에 따라 image, imageUrl 등으로 다를 수 있음)
   lastWatered?: string;    // 마지막으로 물 준 날짜
   registeredAt?: string;   // 식물을 등록한 날짜
@@ -263,7 +268,7 @@ export interface MyPlantItem {
 export interface CreateMyPlantDto {
   plantName: string;
   speciesName?: string;
-  speciesCode?: string;
+  speciesCode?: number;
   photoUrl?: string;
 }
 
@@ -285,7 +290,7 @@ export interface DiagnosisResult {
 }
 
 export interface PlantBookItem {
-  speciesCode: string;
+  speciesCode: number;
   name: string;
   scientificName?: string;
   imageUrl?: string;

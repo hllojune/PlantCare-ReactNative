@@ -49,7 +49,7 @@ export type RootStackParamList = {
   SensorDashboard: undefined;
   Notifications: undefined;
   Settings: undefined;
-  EncyclopediaDetail: { plantId: string };
+  EncyclopediaDetail: { speciesCode: number };
   DiaryWrite: { plantId?: number } | undefined;
   SensorDevices: undefined;
   SensorRegister: { plantId?: string } | undefined;

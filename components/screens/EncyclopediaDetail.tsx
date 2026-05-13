@@ -12,7 +12,7 @@ const CareCard = ({ icon, label, value }:any) => (
 export function EncyclopediaDetail() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'EncyclopediaDetail'>>();
-  const { plantId } = route.params;
+  const { speciesCode } = route.params;
 
   const [plant, setPlant] = useState<PlantBookDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +21,7 @@ export function EncyclopediaDetail() {
     let mounted = true;
     (async () => {
       try {
-        const data = await bookApi.getById(plantId);
+        const data = await bookApi.getById(speciesCode);
         if (mounted) setPlant(data ?? null);
       } catch (error) {
         console.error('도감 상세 정보를 불러오는데 실패했습니다:', error);
@@ -31,7 +31,7 @@ export function EncyclopediaDetail() {
       }
     })();
     return () => { mounted = false; };
-  }, [plantId]);
+  }, [speciesCode]);
 
   if (isLoading) {
     return (

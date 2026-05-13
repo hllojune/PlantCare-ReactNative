@@ -78,7 +78,7 @@ export function PlantEncyclopedia() {
         ) : (
           <View style={s.grid}>
             {plants.map(plant => (
-              <TouchableOpacity key={plant.speciesCode} style={s.card} onPress={() => navigation.navigate('EncyclopediaDetail', { plantId: plant.speciesCode })}>
+              <TouchableOpacity key={plant.speciesCode} style={s.card} onPress={() => navigation.navigate('EncyclopediaDetail', { speciesCode: plant.speciesCode })}>
                 <Image source={plant.imageUrl ? { uri: plant.imageUrl } : undefined} style={s.cardImage}/>
                 <View style={s.cardInfo}>
                   <Text style={s.plantName}>{plant.name}</Text>
