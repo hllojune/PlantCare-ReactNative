@@ -88,7 +88,17 @@ export function Login() {
     try {
       setUserIdError('');
       setPasswordError('');
-      const { token, nickname } = await authApi.login(userId.trim(), password);
+      
+      const {
+      token,
+      nickname,
+      userId: loggedInUserId,
+      } = await authApi.login(userId.trim(), password);
+      localStorage.setItem(
+        'userId',
+        loggedInUserId.toString()
+      );
+
       await setAuthData(token, nickname);
       navigation.dispatch(
         CommonActions.reset({

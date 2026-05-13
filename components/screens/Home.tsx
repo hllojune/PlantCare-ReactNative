@@ -31,7 +31,8 @@ export function Home() {
     setErrorMessage(null);
 
     try {
-      const data = await plantApi.getMyPlants();
+      const storedUserId = Number(localStorage.getItem('userId'));
+      const data = await plantApi.getMyPlants(storedUserId);
       if (!cancelledRef?.current) {
         setMyPlants(data ?? []);
       }

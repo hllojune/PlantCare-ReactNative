@@ -146,7 +146,7 @@ async function request<T>(config: {
 
 export const authApi = {
   async login(userId: string, password: string) {
-    const response = await request<ApiResponse<{ token: string; nickname: string }>>({
+    const response = await request<ApiResponse<{ userId: number; token: string; nickname: string }>>({
       url: '/auth/login',
       method: 'POST',
       data: { userId, password },
@@ -170,9 +170,9 @@ export const authApi = {
 // 토큰은 요청 인터셉터에서 자동으로 실려 가므로 보통 /plant 호출만으로 내 식물을 식별할 수 있음.
 // 백엔드가 userId 파라미터를 필수로 요구하면 인자로 넘겨주세요.
 export const plantApi = {
-  getMyPlants: (userId?: number) =>
+  getMyPlants: (userId: number) =>
     request<MyPlantItem[]>({
-      url: userId != null ? `/plant?userId=${userId}` : '/plant',
+      url: `/plant?userId=${userId}`,
       method: 'GET',
     }),
   getById: (myPlantId: number) =>
