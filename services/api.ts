@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
-const DEVICE_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_DEVICE || 'http://localhost:8080';
+const DEVICE_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_DEVICE || 'http://192.168.68.59:8080';
 const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL_WEB || 'http://localhost:8080';
 
 
@@ -12,10 +12,12 @@ export { BASE_URL };
 
 const TOKEN_KEY = 'authToken';
 const NICKNAME_KEY = 'userNickname';
+const USER_ID_KEY = 'userId';
 
 // 앱이 실행되는 동안 사용할 메모리 캐시 (매번 디스크에서 읽으면 느리므로)
 let authToken: string | null = null;
 let currentNickname = '';
+let currentUserId: number | null = null;
 
 export function setToken(token: string) {
   authToken = token;
@@ -24,6 +26,7 @@ export function setToken(token: string) {
 export function clearToken() {
   authToken = null;
   currentNickname = '';
+  currentUserId = null;
 }
 
 export function setNickname(nickname: string) {
@@ -34,6 +37,10 @@ export function getNickname() {
   return currentNickname;
 }
 
+export function getUserId() {
+  return currentUserId;
+}
+
 /**
  * [추가된 부분 1] 앱 시작 시 저장된 토큰을 불러오는 함수
  */
@@ -41,10 +48,12 @@ export const restoreAuth = async (): Promise<boolean> => {
   try {
     const token = await SecureStore.getItemAsync(TOKEN_KEY);
     const nickname = await SecureStore.getItemAsync(NICKNAME_KEY);
+    const userId = await SecureStore.getItemAsync(USER_ID_KEY);
 
     if (token) {
       authToken = token;
       currentNickname = nickname || '';
+      currentUserId = userId ? Number(userId) : null;
       return true; // 복원 성공 (자동 로그인)
     }
   } catch (error) {
@@ -57,12 +66,14 @@ export const restoreAuth = async (): Promise<boolean> => {
  * [추가된 부분 2] 로그인 성공 시 토큰과 닉네임을 기기에 저장하는 함수
  * (Login.tsx에서 로그인 API 성공 직후 호출해야 함)
  */
-export const setAuthData = async (token: string, nickname: string) => {
+export const setAuthData = async (token: string, nickname: string, userId: number) => {
   try {
     authToken = token;
     currentNickname = nickname;
+    currentUserId = userId;
     await SecureStore.setItemAsync(TOKEN_KEY, token);
     await SecureStore.setItemAsync(NICKNAME_KEY, nickname);
+    await SecureStore.setItemAsync(USER_ID_KEY, String(userId));
   } catch (error) {
     console.error('토큰 저장 실패:', error);
   }
@@ -76,8 +87,10 @@ export const clearAuthData = async () => {
   try {
     authToken = null;
     currentNickname = '';
+    currentUserId = null;
     await SecureStore.deleteItemAsync(TOKEN_KEY);
     await SecureStore.deleteItemAsync(NICKNAME_KEY);
+    await SecureStore.deleteItemAsync(USER_ID_KEY);
   } catch (error) {
     console.error('토큰 삭제 실패:', error);
   }

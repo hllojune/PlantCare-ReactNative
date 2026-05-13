@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+
+import { restoreAuth } from './services/api';
 
 // Screens
 import { Onboarding } from './components/screens/Onboarding';
@@ -96,11 +98,26 @@ function MainTabNavigator() {
 
 // 전체 스택 네비게이터 (앱의 최상위 라우터)
 export default function App() {
+  const [isReady, setIsReady] = useState(false);
+  const [initialRoute, setInitialRoute] = useState<'Onboarding' | 'MainTabs'>('Onboarding');
+
+  useEffect(() => {
+    (async () => {
+      const restored = await restoreAuth();
+      setInitialRoute(restored ? 'MainTabs' : 'Onboarding');
+      setIsReady(true);
+    })();
+  }, []);
+
+  if (!isReady) {
+    return null;
+  }
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="Onboarding"
+          initialRouteName={initialRoute}
           screenOptions={{ headerShown: false }}
         >
           {/* 인증 및 온보딩 */}

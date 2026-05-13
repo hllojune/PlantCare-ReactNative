@@ -94,12 +94,8 @@ export function Login() {
       nickname,
       userId: loggedInUserId,
       } = await authApi.login(userId.trim(), password);
-      localStorage.setItem(
-        'userId',
-        loggedInUserId.toString()
-      );
 
-      await setAuthData(token, nickname);
+      await setAuthData(token, nickname, loggedInUserId);
       navigation.dispatch(
         CommonActions.reset({
           index: 0,

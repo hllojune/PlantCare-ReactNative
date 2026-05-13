@@ -9,7 +9,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainTabParamList, RootStackParamList } from '../../App';
 import { PlantCard } from '../shared/PlantCard';
-import { getNickname, plantApi, MyPlantItem } from '../../services/api';
+import { getNickname, plantApi, MyPlantItem, getUserId } from '../../services/api';
 
 type HomeNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Home'>,
@@ -31,7 +31,10 @@ export function Home() {
     setErrorMessage(null);
 
     try {
-      const storedUserId = Number(localStorage.getItem('userId'));
+      const storedUserId = getUserId();
+      if (storedUserId == null) {
+        throw new Error('로그인 정보가 없습니다.');
+      }
       const data = await plantApi.getMyPlants(storedUserId);
       if (!cancelledRef?.current) {
         setMyPlants(data ?? []);
