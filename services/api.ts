@@ -166,13 +166,25 @@ export const authApi = {
   },
 };
 
+// 🌿 식물 관련 API 묶음 (plant-service: 응답 래퍼 없이 DTO/배열 그대로 반환)
+// 토큰은 요청 인터셉터에서 자동으로 실려 가므로 보통 /plant 호출만으로 내 식물을 식별할 수 있음.
+// 백엔드가 userId 파라미터를 필수로 요구하면 인자로 넘겨주세요.
 export const plantApi = {
-  getAll: () => request<Plant[]>({ url: '/plant', method: 'GET' }),
-  getById: (id: string) => request<Plant>({ url: `/plant/${id}`, method: 'GET' }),
-  create: (data: CreatePlantDto) => request<Plant>({ url: '/plant', method: 'POST', data }),
-  update: (id: string, data: Partial<CreatePlantDto>) =>
-    request<Plant>({ url: `/plant/${id}`, method: 'PUT', data }),
-  delete: (id: string) => request<void>({ url: `/plant/${id}`, method: 'DELETE' }),
+  getMyPlants: (userId?: number) =>
+    request<MyPlantItem[]>({
+      url: userId != null ? `/plant?userId=${userId}` : '/plant',
+      method: 'GET',
+    }),
+  getById: (myPlantId: number) =>
+    request<MyPlantItem>({ url: `/plant/${myPlantId}`, method: 'GET' }),
+  getPlantDetail: (myPlantId: number) =>
+    request<MyPlantItem>({ url: `/plant/${myPlantId}`, method: 'GET' }),
+  addPlant: (data: CreateMyPlantDto) =>
+    request<MyPlantItem>({ url: '/plant', method: 'POST', data }),
+  update: (myPlantId: number, data: Partial<CreateMyPlantDto>) =>
+    request<MyPlantItem>({ url: `/plant/${myPlantId}`, method: 'PUT', data }),
+  delete: (myPlantId: number) =>
+    request<void>({ url: `/plant/${myPlantId}`, method: 'DELETE' }),
 };
 
 // plant-service의 도감 API: 응답 래퍼 없이 DTO/배열을 그대로 반환한다고 가정.
@@ -184,7 +196,7 @@ export const bookApi = {
       method: 'GET',
     }),
   getById: (speciesCode: string) =>
-    request<PlantBookItem>({
+    request<PlantBookDetail>({
       url: `/book/${encodeURIComponent(speciesCode)}`,
       method: 'GET',
     }),
@@ -220,20 +232,26 @@ export const aiApi = {
   },
 };
 
-export interface Plant {
-  id: string;
-  name: string;
-  species: string;
-  imageUrl?: string;
-  memo?: string;
-  plantedDate?: string;
+/**
+ * 🌿 내 식물 데이터 타입 (백엔드 PlantResponseDto 기준)
+ * 백엔드 개발자에게 응답 JSON 필드명이 아래와 일치하는지 확인할 것.
+ */
+export interface MyPlantItem {
+  myPlantId: number;       // 백엔드는 myPlantId (Integer)를 사용
+  userId?: number;         // 식물 주인의 ID (목록 조회 시엔 보통 생략 가능)
+  plantName: string;       // 내가 지어준 식물 이름 (별명)
+  speciesName?: string;    // 식물 종 이름 (예: 몬스테라)
+  speciesCode?: string;    // 도감과 연결하기 위한 종 코드
+  photoUrl?: string;       // 식물 사진 URL (백엔드에 따라 image, imageUrl 등으로 다를 수 있음)
+  lastWatered?: string;    // 마지막으로 물 준 날짜
+  registeredAt?: string;   // 식물을 등록한 날짜
 }
 
-export interface CreatePlantDto {
-  name: string;
-  species: string;
-  memo?: string;
-  plantedDate?: string;
+export interface CreateMyPlantDto {
+  plantName: string;
+  speciesName?: string;
+  speciesCode?: string;
+  photoUrl?: string;
 }
 
 export interface SensorData {
@@ -259,4 +277,13 @@ export interface PlantBookItem {
   scientificName?: string;
   imageUrl?: string;
   difficulty?: string;
+}
+
+export interface PlantBookDetail extends PlantBookItem {
+  description?: string;
+  adviseInfo?: string;
+  growthTemp?: string;
+  waterCycle?: string;
+  lightInfo?: string;
+  humidity?: string;
 }

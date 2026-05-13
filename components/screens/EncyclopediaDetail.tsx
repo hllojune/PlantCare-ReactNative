@@ -1,13 +1,11 @@
-import React from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Platform, StatusBar, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Platform, StatusBar, Dimensions, ActivityIndicator } from 'react-native';
 import { ChevronLeft, Heart, Droplets, Sun, Thermometer, CloudRain, Plus, SquarePen } from 'lucide-react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../App';
+import { bookApi, PlantBookDetail } from '../../services/api';
 const { width } = Dimensions.get('window');
-const data: Record<string,any> = {
-  e1:{ name:'몬스테라 델리시오사', scientificName:'Monstera Deliciosa', image:'https://images.unsplash.com/photo-1608327624934-69f40c5a819b?w=800', difficulty:'보통', description:'매력적인 구멍이 뚫린 커다란 잎이 특징인 열대 관엽식물입니다. 실내 환경에 잘 적응하며 공기 정화 능력이 뛰어납니다.', care:{ water:'겉흙이 말랐을 때 듬뿍', light:'반그늘에서 잘 자라요', temperature:'18–25°C (최저 15°C)', humidity:'60% 이상 (다습)' } },
-};
 const CareCard = ({ icon, label, value }:any) => (
   <View style={s.careCard}><View style={s.careIcon}>{icon}</View><Text style={s.careLabel}>{label}</Text><Text style={s.careValue}>{value}</Text></View>
 );
@@ -15,7 +13,47 @@ export function EncyclopediaDetail() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'EncyclopediaDetail'>>();
   const { plantId } = route.params;
-  const plant = data[plantId] || data.e1;
+
+  const [plant, setPlant] = useState<PlantBookDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await bookApi.getById(plantId);
+        if (mounted) setPlant(data ?? null);
+      } catch (error) {
+        console.error('도감 상세 정보를 불러오는데 실패했습니다:', error);
+        if (mounted) setPlant(null);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [plantId]);
+
+  if (isLoading) {
+    return (
+      <View style={s.center}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff"/>
+        <ActivityIndicator size="large" color="#3a7d44"/>
+      </View>
+    );
+  }
+
+  if (!plant) {
+    return (
+      <View style={s.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff"/>
+        <View style={s.floatingHeader}>
+          <TouchableOpacity style={s.headerBtn} onPress={()=>navigation.goBack()}><ChevronLeft color="#111827" size={24}/></TouchableOpacity>
+        </View>
+        <View style={s.center}><Text style={s.errorText}>식물 정보를 불러올 수 없습니다.</Text></View>
+      </View>
+    );
+  }
+
   return (
     <View style={s.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent/>
@@ -24,25 +62,39 @@ export function EncyclopediaDetail() {
         <TouchableOpacity style={s.headerBtn}><Heart color="#EF4444" size={24}/></TouchableOpacity>
       </View>
       <ScrollView bounces={false} showsVerticalScrollIndicator={false} contentContainerStyle={s.scrollContent}>
-        <View style={s.imageContainer}><Image source={{ uri:plant.image }} style={s.heroImage}/></View>
+        <View style={s.imageContainer}>
+          {plant.imageUrl ? (
+            <Image source={{ uri: plant.imageUrl }} style={s.heroImage}/>
+          ) : (
+            <View style={[s.heroImage, s.heroPlaceholder]}/>
+          )}
+        </View>
         <View style={s.sheet}>
           <View style={s.titleRow}>
             <View style={{flex:1,paddingRight:16}}>
               <Text style={s.plantName}>{plant.name}</Text>
-              <Text style={s.scientificName}>{plant.scientificName}</Text>
+              {plant.scientificName ? <Text style={s.scientificName}>{plant.scientificName}</Text> : null}
             </View>
-            <View style={s.diffBadge}><Text style={s.diffText}>{plant.difficulty}</Text></View>
+            {plant.difficulty ? (
+              <View style={s.diffBadge}><Text style={s.diffText}>{plant.difficulty}</Text></View>
+            ) : null}
           </View>
-          <Text style={s.desc}>{plant.description}</Text>
+          {plant.description ? <Text style={s.desc}>{plant.description}</Text> : null}
           <View style={s.section}>
             <Text style={s.sectionTitle}>관리 가이드</Text>
             <View style={s.careGrid}>
-              <CareCard icon={<Droplets color="#3B82F6" size={20}/>} label="물주기" value={plant.care.water}/>
-              <CareCard icon={<Sun color="#F59E0B" size={20}/>} label="일조량" value={plant.care.light}/>
-              <CareCard icon={<Thermometer color="#EF4444" size={20}/>} label="적정 온도" value={plant.care.temperature}/>
-              <CareCard icon={<CloudRain color="#0EA5E9" size={20}/>} label="적정 습도" value={plant.care.humidity}/>
+              <CareCard icon={<Droplets color="#3B82F6" size={20}/>} label="물주기" value={plant.waterCycle || '-'}/>
+              <CareCard icon={<Sun color="#F59E0B" size={20}/>} label="일조량" value={plant.lightInfo || '-'}/>
+              <CareCard icon={<Thermometer color="#EF4444" size={20}/>} label="적정 온도" value={plant.growthTemp || '-'}/>
+              <CareCard icon={<CloudRain color="#0EA5E9" size={20}/>} label="적정 습도" value={plant.humidity || '-'}/>
             </View>
           </View>
+          {plant.adviseInfo ? (
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>키우기 꿀팁</Text>
+              <View style={s.tipBox}><Text style={s.tipText}>{plant.adviseInfo}</Text></View>
+            </View>
+          ) : null}
           <View style={s.actionContainer}>
             <TouchableOpacity style={s.primaryBtn} onPress={()=>navigation.navigate('AddPlant')}>
               <Plus color="#ffffff" size={20}/><Text style={s.primaryBtnText}>내 식물로 등록하기</Text>
@@ -81,4 +133,9 @@ const s = StyleSheet.create({
   primaryBtnText:{ color:'#ffffff', fontSize:16, fontWeight:'700' },
   secondaryBtn:{ flexDirection:'row', backgroundColor:'#f5f5f0', borderWidth:1, borderColor:'rgba(58,125,68,0.3)', height:56, borderRadius:16, alignItems:'center', justifyContent:'center', gap:8 },
   secondaryBtnText:{ color:'#3a7d44', fontSize:16, fontWeight:'700' },
+  center:{ flex:1, justifyContent:'center', alignItems:'center', backgroundColor:'#ffffff' },
+  errorText:{ fontSize:15, color:'#6B7280' },
+  heroPlaceholder:{ backgroundColor:'#E5E7EB' },
+  tipBox:{ backgroundColor:'#F0FDF4', padding:14, borderRadius:12, borderWidth:1, borderColor:'#BBF7D0' },
+  tipText:{ fontSize:14, color:'#166534', lineHeight:20 },
 });
